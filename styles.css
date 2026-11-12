@@ -218,6 +218,9 @@ h1, h2, h3, p, ul, ol, figure { margin: 0; }
   text-align: center;
 }
 .draft-bar b { font-weight: 800; }
+.draft-bar__link { padding: 3px 12px; border-radius: 999px; background: #1a0710; color: #f6e9e0; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.draft-bar__link:hover { background: #3b1022; }
+.draft-note a { color: inherit; font-weight: 700; }
 .themes { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
 .themes__label { font-weight: 700; }
 .theme-btn { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; border: 1px solid rgba(26, 7, 16, .25); border-radius: 999px; color: inherit; text-decoration: none; font-weight: 700; }
@@ -544,6 +547,8 @@ a.topbar__item:hover { color: var(--foot-link); }
 .card__orn svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 4; }
 .price { font: 800 20px/1 var(--sans); letter-spacing: -.01em; color: var(--head); white-space: nowrap; }
 .price--todo { color: var(--ink-soft); font-weight: 700; opacity: .65; cursor: help; }
+.price--ask { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+.grid__empty { grid-column: 1 / -1; padding: 40px 0; text-align: center; color: var(--ink-soft); }
 .card__action { width: 100%; margin-top: 14px; }
 .card__action .btn { min-height: 46px; }
 .stepper { display: inline-flex; align-items: center; justify-content: space-between; height: 46px; overflow: hidden; border-radius: 12px; background: var(--action); color: var(--on-action); }
@@ -723,6 +728,8 @@ a.topbar__item:hover { color: var(--foot-link); }
 .order__call { display: block; margin-top: 12px; font-size: 14px; color: var(--ink-soft); text-decoration: none; text-align: center; }
 .order__call b { color: var(--action); }
 .order__legal { margin-top: 8px; font-size: 12px; line-height: 1.45; color: var(--ink-soft); opacity: .85; text-align: center; }
+.order__demo { margin-top: 8px; padding: 6px 10px; border: 1px dashed var(--note-line); border-radius: 8px; background: var(--note-bg); color: var(--note-text); font-size: 12px; line-height: 1.45; text-align: center; }
+.order__demo a { color: inherit; font-weight: 800; }
 @media (max-width: 560px) {
   .order__panel { top: auto; left: 0; max-height: 94svh; width: 100%; border-radius: 22px 22px 0 0; transform: translateY(100%); }
   .order__head { padding: 14px 16px 14px 20px; }

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru" data-theme="bordo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Админка — «Пион» (демо)</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1a0710">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin">
+
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="logo-o" viewBox="0 0 64 64">
+      <path d="M32 10A9.43 9.43 0 0 1 47.56 16.44A9.43 9.43 0 0 1 54 32A9.43 9.43 0 0 1 47.56 47.56A9.43 9.43 0 0 1 32 54A9.43 9.43 0 0 1 16.44 47.56A9.43 9.43 0 0 1 10 32A9.43 9.43 0 0 1 16.44 16.44A9.43 9.43 0 0 1 32 10Z"/>
+      <path d="M38.14 19.42A6.56 6.56 0 0 1 45.66 28.95A6.56 6.56 0 0 1 42.9 40.78A6.56 6.56 0 0 1 31.93 46A6.56 6.56 0 0 1 21.01 40.67A6.56 6.56 0 0 1 18.37 28.82A6.56 6.56 0 0 1 25.99 19.36A6.56 6.56 0 0 1 38.14 19.42Z"/>
+      <path d="M32 25.4A3.88 3.88 0 0 1 38.28 29.96A3.88 3.88 0 0 1 35.88 37.34A3.88 3.88 0 0 1 28.12 37.34A3.88 3.88 0 0 1 25.72 29.96A3.88 3.88 0 0 1 32 25.4Z"/>
+      <circle cx="32" cy="32" r="1.8"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M10 7V4.5h4V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></symbol>
+    <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4.5h4.5v15H14M10 8l-4 4 4 4M6 12h10"/></symbol>
+    <symbol id="i-site" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5.5H4.5V6H10"/></symbol>
+  </defs>
+</svg>
+
+<div class="draft-bar" role="note"><span><b>Демо-админка.</b> Всё хранится только в&nbsp;этом браузере. В&nbsp;настоящей версии данные будут на&nbsp;сервере и&nbsp;видны с&nbsp;любого устройства.</span></div>
+
+<p class="nostore" data-nostore hidden>Браузер не&nbsp;разрешает сохранять данные (например, в&nbsp;режиме инкогнито), поэтому демо-админка здесь не&nbsp;работает. Откройте её в&nbsp;обычном окне.</p>
+
+<!-- Вход -->
+<main class="login" data-view="login" hidden>
+  <form class="login__card" data-login novalidate>
+    <span class="logo" aria-label="Пион, цветочный магазин">
+      <span class="logo__word" aria-hidden="true">ПИ<svg class="logo__o"><use href="#logo-o"/></svg>Н</span>
+      <span class="logo__tag" aria-hidden="true">цветочный магазин</span>
+    </span>
+    <h1>Вход для администратора</h1>
+    <label class="field">
+      <span class="field__label">Пароль</span>
+      <input class="input" type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <p class="form-error" data-login-error hidden>Неверный пароль</p>
+    <button class="btn btn--cta btn--block" type="submit">Войти</button>
+    <p class="login__hint">Демо-пароль: <b>pion</b></p>
+    <a class="login__back" href="index.html">← Вернуться на&nbsp;сайт</a>
+  </form>
+</main>
+
+<!-- Админка -->
+<div class="app" data-view="app" hidden>
+  <header class="aheader">
+    <div class="container aheader__in">
+      <a class="logo" href="index.html" aria-label="Пион — открыть сайт">
+        <span class="logo__word" aria-hidden="true">ПИ<svg class="logo__o"><use href="#logo-o"/></svg>Н</span>
+        <span class="logo__tag" aria-hidden="true">цветочный магазин</span>
+      </a>
+      <span class="aheader__badge">Админка</span>
+      <nav class="atabs" role="tablist" aria-label="Разделы админки">
+        <button type="button" role="tab" data-tab="orders" aria-selected="true">Заказы <span class="atabs__count" data-new-count hidden>0</span></button>
+        <button type="button" role="tab" data-tab="products" aria-selected="false">Товары</button>
+      </nav>
+      <div class="aheader__actions">
+        <a class="abtn" href="index.html"><svg class="ico" aria-hidden="true"><use href="#i-site"/></svg><span>На&nbsp;сайт</span></a>
+        <button class="abtn" type="button" data-logout><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg><span>Выйти</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="amain">
+    <section class="container apanel" data-panel="orders" role="tabpanel" aria-label="Заказы">
+      <div class="apanel__head">
+        <div>
+          <h1 class="apanel__title">Заказы</h1>
+          <p class="apanel__sub">Заказ появляется здесь, когда покупатель на&nbsp;сайте нажимает MAX, Telegram, WhatsApp или «Скопировать». Номер заказа стоит в&nbsp;его сообщении в&nbsp;чате.</p>
+        </div>
+        <button class="btn btn--line btn--sm" type="button" data-samples>Добавить примеры заказов</button>
+      </div>
+      <p class="attention" data-attention hidden></p>
+      <div class="chips ofilters" data-order-filters role="group" aria-label="Показать заказы"></div>
+      <div class="olist" data-orders></div>
+    </section>
+
+    <section class="container apanel" data-panel="products" role="tabpanel" aria-label="Товары" hidden>
+      <div class="apanel__head">
+        <div>
+          <h1 class="apanel__title">Товары</h1>
+          <p class="apanel__sub">Порядок здесь&nbsp;— порядок в&nbsp;каталоге на&nbsp;сайте. Изменения видны на&nbsp;сайте сразу.</p>
+        </div>
+        <button class="btn btn--cta btn--sm" type="button" data-add-product><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Добавить товар</button>
+      </div>
+      <div class="plist" data-products></div>
+      <button class="link-btn apanel__reset" type="button" data-reset>Вернуть товары как было</button>
+    </section>
+  </main>
+</div>
+
+<!-- Карточка товара: добавить / изменить -->
+<div class="modal" data-editor hidden>
+  <div class="modal__backdrop" data-close-modal></div>
+  <form class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="editor-title" data-editor-form novalidate>
+    <header class="modal__head">
+      <h2 id="editor-title">Новый товар</h2>
+      <button class="icon-btn" type="button" data-close-modal aria-label="Закрыть"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </header>
+    <div class="modal__body">
+      <div class="photo">
+        <div class="photo__frame">
+          <img data-photo-preview alt="" hidden>
+          <span class="photo__empty" data-photo-empty><svg class="ico" aria-hidden="true"><use href="#i-image"/></svg>Нет фото</span>
+        </div>
+        <label class="btn btn--line btn--sm photo__pick">Выбрать фото<input class="sr-only" type="file" accept="image/*" data-photo-input></label>
+        <p class="hint">Фото обрежем под&nbsp;карточку и&nbsp;уменьшим. Подойдёт снимок с&nbsp;телефона.</p>
+      </div>
+      <label class="field">
+        <span class="field__label">Название *</span>
+        <input class="input" name="pname" maxlength="60" required>
+      </label>
+      <label class="field">
+        <span class="field__label">Состав</span>
+        <textarea class="input input--area" name="pdesc" maxlength="160" rows="2" placeholder="Например: розы, хризантемы и зелень"></textarea>
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span class="field__label">Цена, ₽</span>
+          <input class="input" name="pprice" inputmode="numeric" maxlength="9" placeholder="по запросу">
+        </label>
+        <label class="field">
+          <span class="field__label">Раздел</span>
+          <select class="input" name="pcat">
+            <option value="bouquet">Букеты</option>
+            <option value="box">Корзины и коробки</option>
+            <option value="gift">Подарки</option>
+          </select>
+        </label>
+      </div>
+      <label class="field">
+        <span class="field__label">Надпись на фото</span>
+        <input class="input" name="ptag" maxlength="18" placeholder="Необязательно, например: Корзина">
+      </label>
+      <label class="check"><input type="checkbox" name="pvisible" checked><span>Показывать на&nbsp;сайте</span></label>
+      <p class="form-error" data-form-error hidden></p>
+    </div>
+    <footer class="modal__foot">
+      <button class="btn btn--line" type="button" data-close-modal>Отмена</button>
+      <button class="btn btn--cta" type="submit">Сохранить</button>
+    </footer>
+  </form>
+</div>
+
+<!-- Подтверждение удаления -->
+<div class="modal modal--confirm" data-confirm hidden>
+  <div class="modal__backdrop" data-confirm-no></div>
+  <div class="modal__panel" role="alertdialog" aria-modal="true" aria-labelledby="confirm-text">
+    <p class="confirm__text" id="confirm-text" data-confirm-text></p>
+    <footer class="modal__foot">
+      <button class="btn btn--line" type="button" data-confirm-no>Отмена</button>
+      <button class="btn btn--action" type="button" data-confirm-yes>Удалить</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+
+<script src="store.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

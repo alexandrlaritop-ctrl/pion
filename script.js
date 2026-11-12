@@ -1,7 +1,8 @@
 /*
- * Пион — черновик сайта.
- * Заказ собирается в текст и уходит в мессенджер, который выберет покупатель.
- * Сайт ничего не хранит и никуда не отправляет: ни форм, ни cookie, ни счётчиков.
+ * Пион — демо-версия сайта.
+ * Каталог берётся из PionStore (его меняет демо-админка, данные — в этом браузере).
+ * Заказ получает номер, сохраняется для админки и открывается в мессенджере покупателя.
+ * Имя и телефон сайт не спрашивает — покупатель пишет их в чате.
  */
 (() => {
   'use strict';
@@ -13,6 +14,7 @@
     whatsapp: '79609685122', // номер, если на нём есть WhatsApp
     max: '', // ссылка на чат магазина в MAX
   };
+  const store = window.PionStore || null;
 
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
@@ -27,28 +29,14 @@
     if (a >= 2 && a <= 4 && (b < 12 || b > 14)) return few;
     return many;
   };
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  // короткие слова не остаются в конце строки
+  const SHORT = /(^|[\s(«])(в|во|и|с|со|к|ко|о|об|у|на|по|из|за|от|до|не|ни|а|но|для|без|под|над)\s+/gi;
+  const nbsp = (s) => String(s).replace(SHORT, (m, pre, w) => `${pre}${w} `);
 
-  /* ---------- расцветка черновика: бордо, беж, шалфей ---------- */
+  /* ---------- расцветка (сайт в бордо; ?theme=beige|sage оставлены для сравнения) ---------- */
   const THEMES = { bordo: '#1a0710', beige: '#f2e8db', sage: '#15211b' };
-  function setTheme(name, remember) {
-    if (!THEMES[name]) name = 'bordo';
-    document.documentElement.setAttribute('data-theme', name);
-    $('meta[name="theme-color"]')?.setAttribute('content', THEMES[name]);
-    $$('[data-set-theme]').forEach((a) => a.setAttribute('aria-pressed', String(a.dataset.setTheme === name)));
-    if (!remember) return;
-    try {
-      const url = new URL(location.href);
-      url.searchParams.set('theme', name);
-      history.replaceState(null, '', url);
-    } catch {
-      // страница открыта с диска — адрес не меняем, расцветка всё равно переключится
-    }
-  }
-  setTheme(document.documentElement.getAttribute('data-theme'), false);
-  $$('[data-set-theme]').forEach((a) => a.addEventListener('click', (e) => {
-    e.preventDefault();
-    setTheme(a.dataset.setTheme, true);
-  }));
+  $('meta[name="theme-color"]')?.setAttribute('content', THEMES[document.documentElement.getAttribute('data-theme')] || THEMES.bordo);
 
   /* ---------- шапка и меню ---------- */
   const header = $('.header');
@@ -81,7 +69,8 @@
       reveal.unobserve(e.target);
     }
   }, { rootMargin: '0px 0px -6% 0px' });
-  $$('.reveal').forEach((el) => reveal.observe(el));
+  const observeReveal = (root = document) => $$('.reveal:not(.is-in)', root).forEach((el) => reveal.observe(el));
+  observeReveal();
 
   /* ---------- параллакс ---------- */
   // data-depth: слой сдвигается медленнее (>0) или быстрее (<0) страницы.
@@ -95,6 +84,10 @@
   const request = () => {
     if (!raf) raf = requestAnimationFrame(frame);
   };
+  const watch = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.target.parallax) e.target.parallax.on = e.isIntersecting;
+    request();
+  }, { rootMargin: '30% 0px' });
 
   const scenes = $$('[data-scene]').map((box) => ({
     box,
@@ -108,14 +101,19 @@
       fade: el.hasAttribute('data-fade'),
     })),
   }));
-  const windows = $$('[data-window]').map((box) => ({ box, img: $('img', box), k: Number(box.dataset.window) || 0.07, on: true }));
-  const watch = new IntersectionObserver((entries) => {
-    for (const e of entries) e.target.parallax.on = e.isIntersecting;
+  scenes.forEach((s) => {
+    s.box.parallax = s;
+    watch.observe(s.box);
+  });
+  let windows = [];
+  function collectWindows() {
+    windows.forEach((w) => watch.unobserve(w.box));
+    windows = $$('[data-window]').map((box) => ({ box, img: $('img', box), k: Number(box.dataset.window) || 0.07, on: true }));
+    windows.forEach((w) => {
+      w.box.parallax = w;
+      watch.observe(w.box);
+    });
     request();
-  }, { rootMargin: '30% 0px' });
-  for (const item of [...scenes, ...windows]) {
-    item.box.parallax = item;
-    watch.observe(item.box);
   }
 
   function frame() {
@@ -153,7 +151,7 @@
     }
 
     for (const w of windows) {
-      if (!w.on) continue;
+      if (!w.on || !w.img) continue;
       if (!motion) {
         w.img.style.transform = '';
         continue;
@@ -191,10 +189,10 @@
   let heroOnScreen = true;
   function showSlide(i) {
     current = (i + slides.length) % slides.length;
-    slides.forEach((s, k) => s.classList.toggle('is-active', k === current));
-    dots.forEach((d, k) => {
-      d.classList.toggle('is-active', k === current);
-      d.setAttribute('aria-pressed', String(k === current));
+    slides.forEach((s, n) => s.classList.toggle('is-active', n === current));
+    dots.forEach((d, n) => {
+      d.classList.toggle('is-active', n === current);
+      d.setAttribute('aria-pressed', String(n === current));
     });
   }
   function scheduleSlide() {
@@ -205,8 +203,8 @@
       scheduleSlide();
     }, 6500);
   }
-  dots.forEach((d, k) => d.addEventListener('click', () => {
-    showSlide(k);
+  dots.forEach((d, n) => d.addEventListener('click', () => {
+    showSlide(n);
     scheduleSlide();
   }));
   new IntersectionObserver(([e]) => {
@@ -225,27 +223,10 @@
     else addEventListener('resize', setFall);
   }
 
-  /* ---------- фильтр каталога ---------- */
-  const cards = $$('.card');
-  const chips = $$('.chip');
-  chips.forEach((chip) => chip.addEventListener('click', () => {
-    const filter = chip.dataset.filter;
-    chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
-    cards.forEach((card) => {
-      card.hidden = filter !== 'all' && card.dataset.cat !== filter;
-    });
-    request();
-  }));
-
-  /* ---------- заказ ---------- */
-  const products = new Map(cards.map((card) => [card.dataset.id, {
-    name: card.dataset.name,
-    price: Number(card.dataset.price) || 0,
-    img: $('img', card).getAttribute('src'),
-    card,
-  }]));
-  products.set('custom', { name: 'Индивидуальный букет', price: 0, custom: true });
-  const cart = new Map();
+  /* ---------- заказ: элементы и состояние ---------- */
+  const cart = new Map(); // id товара → количество
+  let products = new Map(); // id → { name, price, img, card }
+  let lastSent = null; // { id, sig } — номер уже записан для этой корзины
 
   const drawer = $('#order');
   const panel = $('.order__panel', drawer);
@@ -255,12 +236,61 @@
   const timeInput = $('[data-time]', drawer);
   const textBox = $('[data-text]', drawer);
   const toastBox = $('[data-toast]');
+  const statusBox = $('[data-status]', drawer);
   const obarText = $('[data-obar-text]');
 
   const pad = (n) => String(n).padStart(2, '0');
   const now = new Date();
   dateInput.min = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
+  /* ---------- каталог из данных ---------- */
+  const grid = $('.grid');
+  const chips = $$('.chip');
+  let filter = 'all';
+
+  function cardHtml(p, i) {
+    const price = p.price ? `<span class="price">${money(p.price, ' ')}</span>` : '<span class="price price--ask">цена по&nbsp;запросу</span>';
+    const tag = p.tag ? `<span class="card__tag">${esc(p.tag)}</span>` : '';
+    return `<article class="card reveal" style="--d:${((i % 4) * 0.06).toFixed(2)}s" data-id="${esc(p.id)}" data-cat="${esc(p.cat)}">`
+      + `<div class="card__media" data-window="0.06"><div class="card__zoom"><img src="${esc(p.img)}" alt="${esc(p.alt || p.name)}" width="800" height="800" loading="lazy" decoding="async"></div>${tag}</div>`
+      + `<div class="card__body"><h3 class="card__title">${nbsp(esc(p.name))}</h3>`
+      + `<p class="card__desc">${nbsp(esc(p.desc || ''))}</p>`
+      + '<span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>'
+      + `${price}<div class="card__action"></div></div></article>`;
+  }
+
+  function applyFilter() {
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filter === filter)));
+    $$('.card', grid).forEach((card) => {
+      card.hidden = filter !== 'all' && card.dataset.cat !== filter;
+    });
+    request();
+  }
+  chips.forEach((chip) => chip.addEventListener('click', () => {
+    filter = chip.dataset.filter;
+    applyFilter();
+  }));
+
+  function mountCatalog() {
+    if (store) {
+      const items = store.getProducts().filter((p) => !p.hidden);
+      grid.innerHTML = items.length ? items.map(cardHtml).join('') : '<p class="grid__empty">Скоро здесь появятся букеты.</p>';
+      products = new Map(items.map((p) => [p.id, { name: p.name, price: p.price || 0, img: p.img, card: grid.querySelector(`[data-id="${CSS.escape(p.id)}"]`) }]));
+      const cats = new Set(items.map((p) => p.cat));
+      chips.forEach((c) => { c.hidden = c.dataset.filter !== 'all' && !cats.has(c.dataset.filter); });
+      if (filter !== 'all' && !cats.has(filter)) filter = 'all';
+    } else {
+      // запасной вариант: карточки, которые уже есть в HTML
+      products = new Map($$('.card', grid).map((card) => [card.dataset.id, { name: card.dataset.name, price: Number(card.dataset.price) || 0, img: $('img', card).getAttribute('src'), card }]));
+    }
+    products.set('custom', { name: 'Индивидуальный букет', price: 0, custom: true });
+    for (const id of [...cart.keys()]) if (!products.has(id)) cart.delete(id);
+    applyFilter();
+    observeReveal(grid);
+    collectWindows();
+  }
+
+  /* ---------- заказ: текст, номер, мессенджеры ---------- */
   const total = () => {
     let n = 0;
     cart.forEach((q) => { n += q; });
@@ -276,12 +306,16 @@
     if (timeInput.value) parts.push(`к ${timeInput.value}`);
     return parts.join(', ');
   }
+  const signature = () => JSON.stringify([[...cart], dateInput.value, timeInput.value, way()]);
+  // номер, который получит заказ (или уже получил, если корзина не менялась)
+  const orderNumber = () => (lastSent && lastSent.sig === signature() ? lastSent.id : store ? store.peekNextOrderId() : null);
 
   const QUICK_TEXT = 'Здравствуйте! Хочу заказать букет. (Пишу с сайта)';
   function orderText() {
+    const n = orderNumber();
     const lines = [];
     if (cart.size) {
-      lines.push('Здравствуйте! Хочу заказать:');
+      lines.push(n ? `Здравствуйте! Заказ № ${n} с сайта:` : 'Здравствуйте! Хочу заказать:');
       let sum = 0;
       let allPriced = true;
       cart.forEach((q, id) => {
@@ -303,13 +337,31 @@
       });
       if (allPriced && cart.size > 1) lines.push(`Сумма по ценам сайта: ${money(sum)}`);
     } else {
-      lines.push('Здравствуйте! Хочу заказать букет.');
+      lines.push(n ? `Здравствуйте! Хочу заказать букет (заявка № ${n} с сайта).` : 'Здравствуйте! Хочу заказать букет.');
     }
     const w = when();
     if (w) lines.push(`Когда: ${w}`);
     lines.push(way() === 'доставка' ? 'Получение: доставка, адрес напишу в чате' : 'Получение: самовывоз');
-    lines.push('(Заказ с сайта)');
+    if (!n) lines.push('(Заказ с сайта)');
     return lines.join('\n');
+  }
+
+  // Записать заказ для админки (демо — в этом браузере). Повторное нажатие с той же корзиной номер не меняет.
+  function recordOrder(channel) {
+    if (!store) return null;
+    const sig = signature();
+    if (lastSent && lastSent.sig === sig && store.getOrders().some((o) => o.id === lastSent.id)) {
+      store.updateOrder(lastSent.id, { channel });
+      return lastSent.id;
+    }
+    const items = [...cart].map(([id, q]) => {
+      const p = products.get(id);
+      return { id, name: p.name, qty: q, price: p.price || null };
+    });
+    const order = store.createOrder({ items, date: dateInput.value, time: timeInput.value, when: when(), way: way(), channel });
+    if (!order) return null;
+    lastSent = { id: order.id, sig };
+    return order.id;
   }
 
   function channelHref(kind, text) {
@@ -353,14 +405,13 @@
   }
 
   // Подсказка: в окне заказа — строкой под кнопками (ничего не закрывает), на странице — всплывашкой снизу.
-  const statusBox = $('[data-status]', drawer);
   let toastTimer = 0;
   let statusTimer = 0;
   function toast(message) {
     if (!drawer.hidden) {
       statusBox.textContent = message;
       clearTimeout(statusTimer);
-      statusTimer = setTimeout(() => { statusBox.textContent = ''; }, 6000);
+      statusTimer = setTimeout(() => { statusBox.textContent = ''; }, 7000);
       return;
     }
     toastBox.textContent = message;
@@ -369,19 +420,20 @@
     toastTimer = setTimeout(() => toastBox.classList.remove('is-on'), 3400);
   }
 
+  /* ---------- заказ: отрисовка ---------- */
   const stepperHtml = (id, q, small) =>
-    `<div class="stepper${small ? ' stepper--sm' : ''}" role="group" aria-label="Количество"><button type="button" data-dec="${id}" aria-label="Убрать один">−</button><output>${q}</output><button type="button" data-inc="${id}" aria-label="Добавить ещё один">+</button></div>`;
+    `<div class="stepper${small ? ' stepper--sm' : ''}" role="group" aria-label="Количество"><button type="button" data-dec="${esc(id)}" aria-label="Убрать один">−</button><output>${q}</output><button type="button" data-inc="${esc(id)}" aria-label="Добавить ещё один">+</button></div>`;
 
   function renderCard(card, id) {
     const q = cart.get(id) || 0;
     const box = $('.card__action', card);
-    if (box.dataset.q === String(q)) return;
+    if (!box || box.dataset.q === String(q)) return;
     const focused = box.contains(document.activeElement) ? document.activeElement : null;
     const kind = focused ? (focused.dataset.add ? 'add' : focused.dataset.inc ? 'inc' : 'dec') : null;
     box.dataset.q = String(q);
     box.innerHTML = q
       ? stepperHtml(id, q, false)
-      : `<button class="btn btn--action btn--block" type="button" data-add="${id}"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В заказ</button>`;
+      : `<button class="btn btn--action btn--block" type="button" data-add="${esc(id)}"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В заказ</button>`;
     if (!kind) return;
     const target = q ? $(kind === 'add' ? '[data-inc]' : `[data-${kind}]`, box) : $('[data-add]', box);
     target?.focus();
@@ -443,10 +495,11 @@
 
     if (keep) {
       const [k, id] = keep;
-      ($(`[data-${k}="${id}"]`, list) || $(`[data-inc="${id}"]`, list) || panel).focus();
+      ($(`[data-${k}="${CSS.escape(id)}"]`, list) || $(`[data-inc="${CSS.escape(id)}"]`, list) || panel).focus();
     }
   }
 
+  /* ---------- окно заказа ---------- */
   let opener = null;
   function openOrder(from) {
     opener = from || document.activeElement;
@@ -516,12 +569,18 @@
     } else if ('closeOrder' in d) {
       closeOrder();
     } else if ('copy' in d) {
-      copy(orderText()).then((ok) => toast(ok ? 'Текст заказа скопирован' : 'Не получилось скопировать — выделите текст вручную'));
+      const id = recordOrder('copy');
+      const text = orderText();
+      render();
+      copy(text).then((ok) => toast(ok ? `Текст заказа${id ? ` № ${id}` : ''} скопирован — вставьте его в чат с магазином` : 'Не получилось скопировать — выделите текст вручную'));
     } else if (d.channel) {
-      const text = 'quick' in d ? QUICK_TEXT : orderText();
+      const quick = 'quick' in d;
+      const id = quick ? null : recordOrder(d.channel);
+      const text = quick ? QUICK_TEXT : orderText();
       el.href = channelHref(d.channel, text);
       copy(text);
-      toast(channelHint(d.channel));
+      if (!quick) render();
+      toast(id ? `Заказ № ${id} сохранён. ${channelHint(d.channel)}` : channelHint(d.channel));
     }
   });
 
@@ -530,6 +589,18 @@
   $$('[data-channel][data-quick]').forEach((a) => { a.href = channelHref(a.dataset.channel, QUICK_TEXT); });
   if (!touch.matches) $$('[data-touch-only]').forEach((el) => { el.hidden = true; });
 
+  // Админка открыта в другой вкладке этого браузера — обновляем каталог и номера заказов.
+  addEventListener('storage', (e) => {
+    if (!store) return;
+    if (e.key === null || e.key === store.KEYS.products) {
+      mountCatalog();
+      render();
+    } else if (e.key === store.KEYS.orders || e.key === store.KEYS.seq) {
+      render();
+    }
+  });
+
+  mountCatalog();
   render();
   request();
 })();

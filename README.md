@@ -1,9 +1,9 @@
-# Пион — черновик сайта
+# Пион — демо-версия сайта
 
-Черновик дизайна сайта цветочного магазина «Пион». Три расцветки:
+Демо сайта цветочного магазина «Пион».
 
-- Бордо: https://alexandrlaritop-ctrl.github.io/pion/?theme=bordo
-- Беж: https://alexandrlaritop-ctrl.github.io/pion/?theme=beige
-- Шалфей: https://alexandrlaritop-ctrl.github.io/pion/?theme=sage
+- Сайт: https://alexandrlaritop-ctrl.github.io/pion/
+- Демо-админка: https://alexandrlaritop-ctrl.github.io/pion/admin.html (демо-пароль: pion)
+- Логотип: https://alexandrlaritop-ctrl.github.io/pion/logo.html
 
-Логотип: https://alexandrlaritop-ctrl.github.io/pion/logo.html
+В демо-версии товары и заказы хранятся только в браузере, где открыт сайт.

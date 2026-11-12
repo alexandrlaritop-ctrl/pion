@@ -77,13 +77,8 @@
 </svg>
 
 <div class="draft-bar" role="note">
-  <span><b>Черновик дизайна.</b> Фото — ваши; тексты, условия и&nbsp;цены — примерные, подставим ваши.</span>
-  <span class="themes" role="group" aria-label="Расцветка сайта">
-    <span class="themes__label">Расцветка:</span>
-    <a class="theme-btn" href="?theme=bordo" data-set-theme="bordo" aria-pressed="true"><i style="--a:#3b1022;--b:#d9b77e"></i>Бордо</a>
-    <a class="theme-btn" href="?theme=beige" data-set-theme="beige" aria-pressed="false"><i style="--a:#efe4d6;--b:#6e1e34"></i>Беж</a>
-    <a class="theme-btn" href="?theme=sage" data-set-theme="sage" aria-pressed="false"><i style="--a:#1d2c24;--b:#dcc293"></i>Шалфей</a>
-  </span>
+  <span><b>Демо-версия сайта.</b> Фото — ваши; тексты, условия и&nbsp;цены — примерные.</span>
+  <a class="draft-bar__link" href="admin.html">Вход в&nbsp;админку →</a>
 </div>
 
 <div class="topbar">
@@ -224,7 +219,7 @@
         <button class="chip" type="button" data-filter="gift" aria-pressed="false">Подарки</button>
       </div>
     </div>
-    <p class="draft-note"><b>Заметка к&nbsp;черновику:</b> фото&nbsp;— ваши работы, названия и&nbsp;составы написали по&nbsp;фото. Цены подставим ваши&nbsp;— сейчас стоит только цена с&nbsp;вашего фото (3&nbsp;400&nbsp;₽).</p>
+    <p class="draft-note"><b>Демо:</b> товары, цены и&nbsp;фото меняются в&nbsp;<a href="admin.html">админке</a>. В&nbsp;демо-версии изменения видны только в&nbsp;этом браузере.</p>
 
     <div class="grid">
       <article class="card reveal" data-id="basket" data-cat="box" data-name="Корзина с цветами" data-price="">
@@ -450,7 +445,7 @@
   </div>
   <div class="container footer__bottom">
     <span>© 2026 «Пион»</span>
-    <span>Сайт не&nbsp;использует cookie и&nbsp;счётчики посещений. Текст заказа уходит только в&nbsp;выбранный вами мессенджер.</span>
+    <span>Сайт не&nbsp;использует cookie и&nbsp;счётчики посещений.</span>
   </div>
 </footer>
 
@@ -484,7 +479,7 @@
           <label class="seg"><input type="radio" name="way" value="самовывоз"><span>Самовывоз</span></label>
         </div>
       </fieldset>
-      <p class="order__privacy"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span>Имя, телефон и&nbsp;адрес на&nbsp;сайте не&nbsp;нужны&nbsp;— сообщите их флористу в&nbsp;чате. Сайт ничего не&nbsp;сохраняет.</span></p>
+      <p class="order__privacy"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span>Имя, телефон и&nbsp;адрес на&nbsp;сайте не&nbsp;нужны&nbsp;— сообщите их флористу в&nbsp;чате.</span></p>
       <div class="order__preview">
         <div class="order__preview-head"><span>Сообщение флористу</span><button class="link-btn" type="button" data-copy>Скопировать</button></div>
         <pre data-text></pre>
@@ -501,6 +496,7 @@
       <p class="order__status" data-status role="status" aria-live="polite"></p>
       <a class="order__call" href="tel:+79609685122">или позвоните: <b>8 (960) 968-51-22</b></a>
       <p class="order__legal">Заказ принят, когда флорист подтвердит его в&nbsp;чате: наличие, итоговую цену, оплату и&nbsp;время.</p>
+      <p class="order__demo">Демо: заказ с&nbsp;номером сохраняется в&nbsp;этом браузере&nbsp;— <a href="admin.html">откройте админку</a>, чтобы его увидеть.</p>
     </footer>
   </aside>
 </div>
@@ -511,6 +507,7 @@
 
 <div class="toast" role="status" aria-live="polite" data-toast></div>
 
+<script src="store.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
