@@ -127,6 +127,75 @@
   .prow__actions .btn { min-width: 0; padding: 0 8px; font-size: 13.5px; }
 }
 
+/* ---------- колокольчик с напоминаниями ---------- */
+.bell { position: relative; }
+.bell__btn { position: relative; }
+.bell__btn.is-alert { border-color: #e39a4f; color: #f3c58f; }
+.bell__count { position: absolute; top: -7px; right: -7px; display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #d9822b; color: #fff; font-size: 11.5px; font-weight: 800; }
+.bell__panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 60; width: min(380px, 92vw); max-height: min(70svh, 560px); overflow-y: auto; border-radius: 18px; background: var(--bg-light); color: var(--ink); box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .6), 0 0 0 1px var(--line); }
+.bell__head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--line); background: var(--bg-light); }
+.bell__head b { font: 600 22px/1 var(--serif); color: var(--head); }
+.bell__list { padding: 10px 12px; }
+.bell__group { margin: 6px 4px 6px; color: var(--ink-soft); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.bell__list ul { display: grid; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.bell__list li button { display: grid; gap: 2px; width: 100%; padding: 10px 12px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); color: var(--ink); text-align: left; cursor: pointer; }
+.bell__list li button:hover { box-shadow: 0 0 0 1px var(--gold-2); }
+.bell__list li b { color: var(--head); font-size: 15px; }
+.bell__list li span { font-size: 13.5px; line-height: 1.4; }
+.bell__empty { padding: 10px 4px; color: var(--ink-soft); font-size: 14px; }
+.bell__foot { display: grid; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); }
+.bell__foot .btn { justify-self: start; }
+@media (max-width: 560px) { .bell__panel { position: fixed; top: 70px; right: 12px; left: 12px; width: auto; } }
+
+/* ---------- напоминания и «сегодня» на вкладке заказов ---------- */
+.attention { display: grid; gap: 6px; margin-top: 18px; padding: 12px 16px; border-radius: 14px; background: #fdf0dd; color: #8a4b0f; }
+.attention__title { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.attention__title .ico { width: 20px; height: 20px; flex: none; }
+.attention__list { display: grid; gap: 4px; margin: 0; padding: 0 0 0 30px; list-style: none; font-size: 14px; }
+.attention__list .link-btn { color: #8a4b0f; font-weight: 800; }
+.ocard.is-flash { animation: flash 1.6s var(--ease); }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 3px var(--gold-2), 0 18px 36px -30px rgba(var(--shade), .5); } 100% { box-shadow: 0 0 0 1px var(--line), 0 18px 36px -30px rgba(var(--shade), .5); } }
+
+.today { display: grid; gap: 10px; margin-top: 18px; padding: 14px 16px; border-radius: 16px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.today__head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.today__head .ico { width: 20px; height: 20px; color: var(--action); }
+.today__head b { font: 600 20px/1.1 var(--serif); color: var(--head); }
+.today__head span { color: var(--ink-soft); font-size: 13px; }
+.today__slots, .sday__slots { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.today__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+@media (max-width: 760px) { .today__slots, .sday__slots { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.tslot { display: grid; justify-items: center; gap: 2px; min-height: 52px; padding: 6px 4px; border: 1px solid #b7dcc0; border-radius: 12px; background: #eef8f0; color: #22603a; font: 800 13px/1.2 var(--sans); cursor: pointer; }
+.tslot small { font-size: 11px; font-weight: 700; opacity: .85; }
+.tslot.is-blocked { border-color: #f0c2cb; background: #fbe9ec; color: #8e1f3a; text-decoration: line-through; }
+.tslot.is-blocked small { text-decoration: none; }
+.tslot:disabled { border-color: var(--line); background: var(--bg-light-2); color: var(--ink-soft); cursor: default; text-decoration: none; opacity: .7; }
+
+/* ---------- график ---------- */
+.sched { display: grid; gap: 10px; margin-top: 20px; }
+.sday { display: grid; gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.sday.is-closed { background: var(--bg-light-2); }
+.sday__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.sday__head b { font: 600 20px/1.1 var(--serif); color: var(--head); }
+.switch { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; color: var(--head); cursor: pointer; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch__track { position: relative; width: 44px; height: 26px; border-radius: 13px; background: #d9c7c9; transition: background-color .2s; }
+.switch__track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, .25); transition: transform .2s var(--ease); }
+.switch input:checked + .switch__track { background: #2f8a4f; }
+.switch input:checked + .switch__track::after { transform: translateX(18px); }
+.switch input:focus-visible + .switch__track { outline: 2px solid var(--gold-2); outline-offset: 2px; }
+.sday.is-closed .switch__text { color: #8e1f3a; }
+
+/* цветы поштучно: круглое фото */
+.prow--flower .prow__img { width: 64px; height: 64px; border-radius: 50%; }
+@media (max-width: 760px) { .prow--flower .prow__img { width: 56px; height: 56px; } }
+.photo__frame.is-round { aspect-ratio: 1; border-radius: 50%; }
+
+/* на телефоне 4 вкладки в одну строку */
+@media (max-width: 760px) {
+  .atabs { gap: 4px; }
+  .atabs button { height: 40px; padding: 0 6px; font-size: 14px; }
+}
+
 /* ---------- окна ---------- */
 .modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; }
 .modal__backdrop { position: absolute; inset: 0; background: rgba(var(--shade), .62); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }

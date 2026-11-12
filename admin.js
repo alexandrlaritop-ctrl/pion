@@ -1,6 +1,7 @@
 /*
- * Пион — демо-админка: вход, товары, заказы и их статусы.
- * Данные лежат в этом браузере (PionStore). В настоящей версии те же действия пойдут на сервер.
+ * Пион — демо-админка: вход, заказы и их статусы, напоминания, букеты, цветы поштучно, график приёма.
+ * Данные лежат в этом браузере (PionStore). В настоящей версии те же действия пойдут на сервер,
+ * а напоминания будут приходить в Telegram или MAX.
  */
 (() => {
   'use strict';
@@ -47,13 +48,20 @@
     if (h < 24) return `${h} ч`;
     return `${Math.floor(h / 24)} дн`;
   }
+  function dayLabel(d, index) {
+    const date = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    if (index === 0) return `Сегодня, ${date}`;
+    if (index === 1) return `Завтра, ${date}`;
+    const wd = d.toLocaleDateString('ru-RU', { weekday: 'long' });
+    return `${wd[0].toUpperCase()}${wd.slice(1)}, ${date}`;
+  }
 
   let toastTimer = 0;
   function toast(message) {
     toastBox.textContent = message;
     toastBox.classList.add('is-on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toastBox.classList.remove('is-on'), 3200);
+    toastTimer = setTimeout(() => toastBox.classList.remove('is-on'), 3600);
   }
 
   /* ---------- подтверждение ---------- */
@@ -92,9 +100,13 @@
   function showApp() {
     loginView.hidden = true;
     appView.hidden = false;
-    showTab(location.hash === '#products' ? 'products' : 'orders');
+    const tab = location.hash.slice(1);
+    showTab(['orders', 'bouquets', 'flowers', 'schedule'].includes(tab) ? tab : 'orders');
     renderOrders();
-    renderProducts();
+    renderList('bouquet');
+    renderList('flower');
+    renderSchedule();
+    setTimeout(checkReminders, 800);
   }
   function showLogin() {
     appView.hidden = true;
@@ -111,6 +123,7 @@
   });
   $('[data-logout]').addEventListener('click', () => {
     S.logout();
+    closeBell();
     showLogin();
   });
 
@@ -134,9 +147,16 @@
   const attention = $('[data-attention]');
   const newCount = $('[data-new-count]');
   let orderFilter = 'all';
-  let knownIds = new Set();
+  let knownIds = new Set(S.getOrders().map((o) => o.id));
 
   const isStale = (o, now) => ACTIVE.has(o.status) && now - (o.statusAt || o.createdAt) > STALE_MS;
+  // Текст напоминания: что случилось и что сделать
+  function remindText(o, now) {
+    const t = ago(now - (o.statusAt || o.createdAt));
+    if (o.status === 'new') return `Новый заказ ждёт ${t} — свяжитесь с клиентом`;
+    if (o.status === 'wrote') return `Клиент написал ${t} назад — не забудьте ответить`;
+    return `Ожидает ответа ${t} — не забудьте ответить`;
+  }
   function sumText(items) {
     if (!items.length) return '—';
     const priced = items.filter((i) => i.price);
@@ -144,13 +164,15 @@
     if (priced.length === items.length) return money(total);
     return priced.length ? `${money(total)} + по запросу` : 'по запросу';
   }
+  function itemLine(i) {
+    const qty = i.kind === 'flower' ? ` × ${i.qty} шт` : i.qty > 1 ? ` × ${i.qty}` : '';
+    return `<li><span>${esc(i.name)}${qty}</span><b>${i.price ? money(i.price * i.qty) : 'по запросу'}</b></li>`;
+  }
   function orderHtml(o, now) {
     const st = STATUS[o.status] || STATUS.new;
     const stale = isStale(o, now);
     const items = Array.isArray(o.items) ? o.items : [];
-    const itemsHtml = items.length
-      ? items.map((i) => `<li><span>${esc(i.name)}${i.qty > 1 ? ` × ${i.qty}` : ''}</span><b>${i.price ? money(i.price * i.qty) : 'по запросу'}</b></li>`).join('')
-      : '<li><span>Без выбора — опишет в чате</span></li>';
+    const itemsHtml = items.length ? items.map(itemLine).join('') : '<li><span>Без выбора — опишет в чате</span></li>';
     const options = S.STATUSES.map((s) => `<option value="${s.id}"${s.id === st.id ? ' selected' : ''}>${s.label}</option>`).join('');
     const history = (o.history || []).map((h) => `${(STATUS[h.status] || st).label} ${fmtShort(h.at)}`).join(' → ');
     return `<article class="ocard ocard--${st.id}${stale ? ' is-stale' : ''}" data-order="${o.id}">
@@ -158,7 +180,7 @@
         <div><b class="ocard__num">№ ${o.id}</b>${o.sample ? '<span class="ocard__sample">пример</span>' : ''}<span class="ocard__time">${fmtTime(o.createdAt)}</span></div>
         <label class="status status--${st.id}"><span class="sr-only">Статус заказа № ${o.id}</span><select data-status="${o.id}">${options}</select></label>
       </header>
-      ${stale ? `<p class="ocard__alert"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>Без движения ${ago(now - (o.statusAt || o.createdAt))} — не забудьте ответить</p>` : ''}
+      ${stale ? `<p class="ocard__alert"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>${remindText(o, now)}</p>` : ''}
       <ul class="ocard__items">${itemsHtml}</ul>
       <dl class="ocard__meta">
         <div><dt>Сумма</dt><dd>${sumText(items)}</dd></div>
@@ -178,21 +200,25 @@
   function renderOrders() {
     const orders = S.getOrders().sort((a, b) => b.createdAt - a.createdAt);
     const now = Date.now();
-    const counts = { all: orders.length, attention: orders.filter((o) => isStale(o, now)).length };
+    const stale = orders.filter((o) => isStale(o, now)).sort((a, b) => (a.statusAt || a.createdAt) - (b.statusAt || b.createdAt));
+    const counts = { all: orders.length, attention: stale.length };
     S.STATUSES.forEach((s) => { counts[s.id] = orders.filter((o) => o.status === s.id).length; });
     const filters = [['all', 'Все'], ['attention', 'Требуют внимания'], ...S.STATUSES.map((s) => [s.id, s.label])];
     filtersBox.innerHTML = filters
       .filter(([id]) => id === 'all' || counts[id] || orderFilter === id)
       .map(([id, label]) => `<button class="chip" type="button" data-ofilter="${id}" aria-pressed="${orderFilter === id}">${label}<span class="chip__n">${counts[id]}</span></button>`)
       .join('');
-    attention.hidden = !counts.attention;
-    attention.innerHTML = `<svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>Без движения больше 2 часов: ${counts.attention} — не забудьте ответить`;
+    attention.hidden = !stale.length;
+    attention.innerHTML = stale.length
+      ? `<p class="attention__title"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>Не забудьте ответить: ${stale.length} ${stale.length === 1 ? 'заказ ждёт' : 'заказа ждут'} больше 2 часов</p>`
+        + `<ul class="attention__list">${stale.map((o) => `<li><button class="link-btn" type="button" data-goto-order="${o.id}">№ ${o.id}</button> — ${remindText(o, now).toLowerCase()}</li>`).join('')}</ul>`
+      : '';
     const shown = orders.filter((o) => orderFilter === 'all' || (orderFilter === 'attention' ? isStale(o, now) : o.status === orderFilter));
     ordersBox.innerHTML = shown.length ? shown.map((o) => orderHtml(o, now)).join('') : emptyOrders(orders.length);
     newCount.hidden = !counts.new;
     newCount.textContent = String(counts.new);
     document.title = `${counts.new ? `(${counts.new}) ` : ''}Админка — «Пион» (демо)`;
-    knownIds = new Set(orders.map((o) => o.id));
+    renderBell(orders, stale, now);
   }
 
   filtersBox.addEventListener('click', (e) => {
@@ -233,42 +259,158 @@
     renderOrders();
     toast(`Заказ № ${id} удалён`);
   });
+  // Перейти к заказу из напоминания: открываем вкладку, прокручиваем и подсвечиваем карточку.
+  function gotoOrder(id) {
+    closeBell();
+    showTab('orders');
+    if (!$(`[data-order="${id}"]`, ordersBox)) {
+      orderFilter = 'all';
+      renderOrders();
+    }
+    const card = $(`[data-order="${id}"]`, ordersBox);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.remove('is-flash');
+    void card.offsetWidth;
+    card.classList.add('is-flash');
+    $(`[data-status="${id}"]`, card)?.focus({ preventScroll: true });
+  }
 
-  // Примеры заказов — чтобы показать статусы и подсветку «без движения» без ожидания.
+  // Примеры заказов — чтобы показать статусы и напоминания без ожидания.
   function addSamples() {
     const H = 3600000;
     const now = Date.now();
-    const byId = Object.fromEntries(S.getProducts().concat(S.DEFAULT_PRODUCTS).reverse().map((p) => [p.id, p]));
-    const item = (id, qty = 1) => ({ id, name: byId[id].name, qty, price: byId[id].price || null });
+    const byId = Object.fromEntries(S.getProducts().concat(S.DEFAULT_PRODUCTS, S.getFlowers(), S.DEFAULT_FLOWERS).reverse().map((p) => [p.id, p]));
+    const item = (id, qty = 1, kind = 'bouquet') => ({ id, kind, name: byId[id].name, qty, price: byId[id].price || null });
     const day = (n) => new Date(now + n * 86400000).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
     const samples = [
       { items: [item('orchids')], when: '', way: 'доставка', channel: 'telegram', status: 'declined', created: 50 * H, moved: 48 * H, note: 'Передумали' },
-      { items: [item('box')], when: `${day(2)}, к 12:00`, way: 'самовывоз', channel: 'max', status: 'accepted', created: 26 * H, moved: 20 * H, note: 'Заберут в 12:00' },
-      { items: [item('gift')], when: `${day(1)}, к 12:00`, way: 'доставка', channel: 'whatsapp', status: 'waiting', created: 6 * H, moved: 5 * H, note: 'Ждём адрес доставки' },
-      { items: [item('mint', 2)], when: `${day(1)}, к 15:00`, way: 'самовывоз', channel: 'telegram', status: 'wrote', created: 4 * H, moved: 3 * H, note: 'Спросили про открытку — ответить' },
-      { items: [item('basket')], when: `${day(0)}, к 18:00`, way: 'доставка', channel: 'max', status: 'new', created: 12 * 60000, moved: 12 * 60000, note: '' },
+      { items: [item('box')], when: `${day(2)}, 12:00–14:00`, way: 'самовывоз', channel: 'max', status: 'accepted', created: 26 * H, moved: 20 * H, note: 'Заберут в 12:00' },
+      { items: [item('gift')], when: `${day(1)}, 10:00–12:00`, way: 'доставка', channel: 'whatsapp', status: 'waiting', created: 6 * H, moved: 5 * H, note: 'Ждём адрес доставки' },
+      { items: [item('mint', 2)], when: `${day(1)}, 14:00–16:00`, way: 'самовывоз', channel: 'telegram', status: 'wrote', created: 4 * H, moved: 3 * H, note: 'Спросили про открытку — ответить' },
+      { items: [item('f-rose-pink', 15, 'flower'), item('f-chrysanthemum', 5, 'flower')], when: `${day(1)}, 16:00–18:00`, way: 'доставка', channel: 'max', status: 'new', created: 12 * 60000, moved: 12 * 60000, note: '' },
     ];
     for (const s of samples) {
       const o = S.createOrder({ items: s.items, when: s.when, way: s.way, channel: s.channel, note: s.note, sample: true }, now - s.created);
       if (o && s.status !== 'new') S.updateOrder(o.id, { status: s.status }, now - s.moved);
     }
+    knownIds = new Set(S.getOrders().map((o) => o.id)); // примеры — не «новые заказы» для уведомлений
     orderFilter = 'all';
     showTab('orders');
     renderOrders();
     toast('Добавили 5 примеров заказов');
   }
+
+  /* ---------- колокольчик: напоминания и уведомления ---------- */
+  const bellBtn = $('[data-bell]');
+  const bellPanel = $('[data-bell-panel]');
+  const bellCount = $('[data-bell-count]');
+  const bellList = $('[data-bell-list]');
+  const notifyBtn = $('[data-notify-on]');
+  const notifyState = $('[data-notify-state]');
+  function renderBell(orders, stale, now) {
+    const fresh = orders.filter((o) => o.status === 'new' && !isStale(o, now));
+    const n = stale.length + fresh.length;
+    bellCount.hidden = !n;
+    bellCount.textContent = String(n);
+    bellBtn.classList.toggle('is-alert', stale.length > 0);
+    const row = (o, text) => `<li><button type="button" data-goto-order="${o.id}"><b>№ ${o.id}</b><span>${text}</span></button></li>`;
+    bellList.innerHTML = n
+      ? (stale.length ? `<p class="bell__group">Не забудьте ответить</p><ul>${stale.map((o) => row(o, remindText(o, now))).join('')}</ul>` : '')
+        + (fresh.length ? `<p class="bell__group">Новые заказы</p><ul>${fresh.map((o) => row(o, `пришёл ${fmtTime(o.createdAt)}, ${(o.items || []).map((i) => i.name).join(', ') || 'без выбора'}`)).join('')}</ul>` : '')
+      : '<p class="bell__empty">Всё в порядке — никто не ждёт ответа.</p>';
+    renderNotifyState();
+  }
+  function openBell() {
+    bellPanel.hidden = false;
+    bellBtn.setAttribute('aria-expanded', 'true');
+  }
+  function closeBell() {
+    bellPanel.hidden = true;
+    bellBtn.setAttribute('aria-expanded', 'false');
+  }
+  bellBtn.addEventListener('click', () => (bellPanel.hidden ? openBell() : closeBell()));
+  $('[data-bell-close]').addEventListener('click', closeBell);
   document.addEventListener('click', (e) => {
-    if (e.target.closest('[data-samples]')) addSamples();
+    if (!bellPanel.hidden && !e.target.closest('.bell')) closeBell();
   });
 
-  /* ---------- товары ---------- */
-  const productsBox = $('[data-products]');
-  function productRow(p, i, n) {
-    return `<article class="prow${p.hidden ? ' is-hidden' : ''}" data-product="${esc(p.id)}">
+  const canNotify = 'Notification' in window;
+  function renderNotifyState() {
+    if (!canNotify) {
+      notifyBtn.hidden = true;
+      notifyState.textContent = 'Этот браузер не умеет показывать уведомления. Напоминания видны здесь и в списке заказов.';
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      notifyBtn.hidden = true;
+      notifyState.textContent = 'Уведомления включены: сообщим о новом заказе и о том, что клиент давно ждёт ответа (пока админка открыта).';
+    } else if (Notification.permission === 'denied') {
+      notifyBtn.hidden = true;
+      notifyState.textContent = 'Уведомления запрещены в настройках браузера для этого сайта.';
+    } else {
+      notifyBtn.hidden = false;
+    }
+  }
+  notifyBtn.addEventListener('click', async () => {
+    if (!canNotify) return;
+    try {
+      await Notification.requestPermission();
+    } catch {
+      // старые браузеры
+    }
+    renderNotifyState();
+    if (Notification.permission === 'granted') systemNotify('Уведомления включены', 'Напомним о новых заказах и о тех, кто ждёт ответа.');
+  });
+  function systemNotify(title, body, orderId) {
+    if (!canNotify || Notification.permission !== 'granted') return;
+    try {
+      const n = new Notification(title, { body, icon: 'favicon.svg', tag: orderId ? `pion-${orderId}` : undefined });
+      n.onclick = () => {
+        window.focus();
+        if (orderId) gotoOrder(orderId);
+        n.close();
+      };
+    } catch {
+      // на телефоне уведомления из страницы могут быть недоступны
+    }
+  }
+  // Раз в минуту и при новых данных: кому пора напомнить. Каждое напоминание — один раз на статус.
+  function checkReminders() {
+    const now = Date.now();
+    const orders = S.getOrders();
+    const notified = S.getNotified();
+    let changed = false;
+    for (const o of orders) {
+      if (!isStale(o, now)) continue;
+      const mark = String(o.statusAt || o.createdAt);
+      if (notified[o.id] === mark) continue;
+      notified[o.id] = mark;
+      changed = true;
+      if (o.sample) continue; // примеры не будим уведомлениями
+      const text = remindText(o, now);
+      toast(`№ ${o.id}: ${text}`);
+      systemNotify(`Пион: заказ № ${o.id}`, text, o.id);
+    }
+    if (changed) S.setNotified(notified);
+  }
+
+  /* ---------- букеты и цветы ---------- */
+  const KINDS = {
+    bouquet: { get: S.getProducts, save: S.saveProducts, reset: S.resetProducts, box: $('[data-list="bouquet"]'), prefix: 'p', one: 'букет', W: 640, H: 800 },
+    flower: { get: S.getFlowers, save: S.saveFlowers, reset: S.resetFlowers, box: $('[data-list="flower"]'), prefix: 'f', one: 'цветок', W: 480, H: 480 },
+  };
+  function itemRow(kind, p, i, n) {
+    const isF = kind === 'flower';
+    const price = p.price ? `${money(p.price)}${isF ? ' за шт' : ''}` : 'цена по запросу';
+    const meta = isF ? price : `${esc(S.CATS[p.cat] || '')} · ${price}`;
+    const hidden = p.hidden ? ` · <em>${isF ? 'закончился — не виден на сайте' : 'скрыт с сайта'}</em>` : '';
+    const toggle = isF ? (p.hidden ? 'Появился' : 'Закончился') : (p.hidden ? 'Показать' : 'Скрыть');
+    return `<article class="prow${p.hidden ? ' is-hidden' : ''}${isF ? ' prow--flower' : ''}" data-item="${esc(p.id)}">
       <span class="prow__img"><img src="${esc(p.img)}" alt="" loading="lazy"></span>
       <div class="prow__info">
         <b class="prow__name">${esc(p.name)}</b>
-        <span class="prow__meta">${esc(S.CATS[p.cat] || '')} · ${p.price ? money(p.price) : 'цена по запросу'}${p.hidden ? ' · <em>скрыт с сайта</em>' : ''}</span>
+        <span class="prow__meta">${meta}${hidden}</span>
         ${p.desc ? `<span class="prow__desc">${esc(p.desc)}</span>` : ''}
       </div>
       <div class="prow__actions">
@@ -276,67 +418,75 @@
           <button class="icon-btn" type="button" data-move="-1" aria-label="Поднять выше"${i === 0 ? ' disabled' : ''}><svg class="ico" aria-hidden="true"><use href="#i-up"/></svg></button>
           <button class="icon-btn" type="button" data-move="1" aria-label="Опустить ниже"${i === n - 1 ? ' disabled' : ''}><svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></button>
         </span>
-        <button class="btn btn--line btn--sm" type="button" data-toggle>${p.hidden ? 'Показать' : 'Скрыть'}</button>
+        <button class="btn btn--line btn--sm" type="button" data-toggle>${toggle}</button>
         <button class="btn btn--action btn--sm" type="button" data-edit>Изменить</button>
         <button class="icon-btn icon-btn--danger" type="button" data-delete aria-label="Удалить «${esc(p.name)}»"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg></button>
       </div>
     </article>`;
   }
-  function renderProducts() {
-    const list = S.getProducts();
-    productsBox.innerHTML = list.length ? list.map((p, i) => productRow(p, i, list.length)).join('') : '<p class="aempty">Товаров нет. Нажмите «Добавить товар».</p>';
+  function renderList(kind) {
+    const K = KINDS[kind];
+    const list = K.get();
+    K.box.innerHTML = list.length ? list.map((p, i) => itemRow(kind, p, i, list.length)).join('') : `<p class="aempty">Пока пусто. Нажмите «Добавить ${K.one}».</p>`;
   }
-  function saveList(list) {
-    if (S.saveProducts(list)) return true;
+  function saveList(kind, list) {
+    if (KINDS[kind].save(list)) return true;
     toast('Не получилось сохранить: в браузере не хватает места');
     return false;
   }
-  productsBox.addEventListener('click', async (e) => {
+  $$('[data-list]').forEach((box) => box.addEventListener('click', async (e) => {
+    const kind = box.dataset.list;
     const btn = e.target.closest('button');
-    const row = e.target.closest('[data-product]');
+    const row = e.target.closest('[data-item]');
     if (!btn || !row) return;
-    const id = row.dataset.product;
-    const list = S.getProducts();
+    const id = row.dataset.item;
+    const list = KINDS[kind].get();
     const i = list.findIndex((p) => p.id === id);
     if (i < 0) return;
+    const sel = `[data-item="${CSS.escape(id)}"]`;
     if (btn.dataset.move) {
       const j = i + Number(btn.dataset.move);
       if (j < 0 || j >= list.length) return;
       [list[i], list[j]] = [list[j], list[i]];
-      if (!saveList(list)) return;
-      renderProducts();
-      const again = $(`[data-product="${CSS.escape(id)}"] [data-move="${btn.dataset.move}"]`, productsBox);
-      (again && !again.disabled ? again : $(`[data-product="${CSS.escape(id)}"] [data-edit]`, productsBox))?.focus();
+      if (!saveList(kind, list)) return;
+      renderList(kind);
+      const again = $(`${sel} [data-move="${btn.dataset.move}"]`, box);
+      (again && !again.disabled ? again : $(`${sel} [data-edit]`, box))?.focus();
     } else if ('toggle' in btn.dataset) {
       list[i].hidden = !list[i].hidden;
-      if (!saveList(list)) return;
-      renderProducts();
-      $(`[data-product="${CSS.escape(id)}"] [data-toggle]`, productsBox)?.focus();
-      toast(list[i].hidden ? `«${list[i].name}» скрыт с сайта` : `«${list[i].name}» снова на сайте`);
+      if (!saveList(kind, list)) return;
+      renderList(kind);
+      $(`${sel} [data-toggle]`, box)?.focus();
+      const name = `«${list[i].name}»`;
+      toast(kind === 'flower' ? (list[i].hidden ? `${name} закончился — убрали с сайта` : `${name} снова в наличии`) : (list[i].hidden ? `${name} скрыт с сайта` : `${name} снова на сайте`));
     } else if ('edit' in btn.dataset) {
-      openEditor(id);
+      openEditor(kind, id);
     } else if ('delete' in btn.dataset) {
-      if (!(await confirmBox(`Удалить «${list[i].name}»? Товар пропадёт с сайта.`))) return;
+      if (!(await confirmBox(`Удалить «${list[i].name}»? Он пропадёт с сайта.`))) return;
       list.splice(i, 1);
-      if (!saveList(list)) return;
-      renderProducts();
-      toast('Товар удалён');
+      if (!saveList(kind, list)) return;
+      renderList(kind);
+      toast('Удалено');
     }
-  });
-  $('[data-reset]').addEventListener('click', async () => {
-    if (!(await confirmBox('Вернуть товары как было в начале? Ваши изменения и добавленные товары пропадут.', 'Вернуть'))) return;
-    S.resetProducts();
-    renderProducts();
-    toast('Товары вернули как было');
-  });
+  }));
+  $$('[data-reset]').forEach((b) => b.addEventListener('click', async () => {
+    const kind = b.dataset.reset;
+    const what = kind === 'flower' ? 'цветы' : 'букеты';
+    if (!(await confirmBox(`Вернуть ${what} как было в начале? Ваши изменения пропадут.`, 'Вернуть'))) return;
+    KINDS[kind].reset();
+    renderList(kind);
+    toast(`${what[0].toUpperCase()}${what.slice(1)} вернули как было`);
+  }));
 
-  /* ---------- карточка товара ---------- */
+  /* ---------- карточка букета или цветка ---------- */
   const editor = $('[data-editor]');
   const form = $('[data-editor-form]');
   const F = form.elements;
   const preview = $('[data-photo-preview]');
   const photoEmpty = $('[data-photo-empty]');
+  const photoFrame = $('[data-photo-frame]');
   const formError = $('[data-form-error]');
+  let editKind = 'bouquet';
   let editingId = null;
   let photo = null;
   let editorOpener = null;
@@ -352,18 +502,26 @@
     formError.textContent = message;
     formError.hidden = false;
   }
-  function openEditor(id) {
-    const p = id ? S.getProducts().find((x) => x.id === id) : null;
+  function openEditor(kind, id) {
+    editKind = kind;
+    const isF = kind === 'flower';
+    const p = id ? KINDS[kind].get().find((x) => x.id === id) : null;
     editingId = p ? p.id : null;
     editorOpener = document.activeElement;
     form.reset();
     formError.hidden = true;
-    $('#editor-title').textContent = p ? 'Изменить товар' : 'Новый товар';
+    $('#editor-title').textContent = `${p ? 'Изменить' : 'Новый'} ${KINDS[kind].one}`;
+    $$('[data-only="bouquet"]', form).forEach((el) => { el.hidden = isF; });
+    $('[data-desc-label]').textContent = isF ? 'Описание' : 'Состав';
+    F.pdesc.placeholder = isF ? 'Например: Эквадор, 60 см' : 'Например: розы, хризантемы и зелень';
+    $('[data-price-label]').textContent = isF ? 'Цена за 1 шт, ₽' : 'Цена, ₽';
+    $('[data-visible-label]').textContent = isF ? 'Есть в наличии (показывать на сайте)' : 'Показывать на сайте';
+    photoFrame.classList.toggle('is-round', isF);
     F.pname.value = p ? p.name : '';
     F.pdesc.value = p ? p.desc : '';
     F.pprice.value = p && p.price ? String(p.price) : '';
-    F.pcat.value = p ? p.cat : 'bouquet';
-    F.ptag.value = p ? p.tag : '';
+    F.pcat.value = p && p.cat ? p.cat : 'bouquet';
+    F.ptag.value = p && p.tag ? p.tag : '';
     F.pvisible.checked = p ? !p.hidden : true;
     setPhoto(p ? p.img : null);
     editor.hidden = false;
@@ -377,13 +535,15 @@
     editorOpener?.focus?.();
   }
   $$('[data-close-modal]', editor).forEach((b) => b.addEventListener('click', closeEditor));
-  $('[data-add-product]').addEventListener('click', () => openEditor(null));
+  $$('[data-add-item]').forEach((b) => b.addEventListener('click', () => openEditor(b.dataset.addItem, null)));
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !editor.hidden && confirmEl.hidden) closeEditor();
+    if (e.key !== 'Escape') return;
+    if (!editor.hidden && confirmEl.hidden) closeEditor();
+    else if (!bellPanel.hidden) closeBell();
   });
 
-  // Фото с телефона или компьютера: обрезаем под карточку 4:5 и уменьшаем до 640×800.
-  async function toCardImage(file) {
+  // Фото с телефона или компьютера: обрезаем под карточку и уменьшаем.
+  async function toCardImage(file, W, H) {
     let src = null;
     if ('createImageBitmap' in window) {
       try {
@@ -401,11 +561,7 @@
         img.src = url;
       });
     }
-    const W = 640;
-    const H = 800;
-    const sw = src.width;
-    const sh = src.height;
-    const scale = Math.max(W / sw, H / sh);
+    const scale = Math.max(W / src.width, H / src.height);
     const cw = W / scale;
     const ch = H / scale;
     const canvas = document.createElement('canvas');
@@ -413,7 +569,7 @@
     canvas.height = H;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, 0, 0, W, H);
+    ctx.drawImage(src, (src.width - cw) / 2, (src.height - ch) / 2, cw, ch, 0, 0, W, H);
     if (src.close) src.close();
     return canvas.toDataURL('image/jpeg', 0.8);
   }
@@ -426,7 +582,7 @@
       return;
     }
     try {
-      setPhoto(await toCardImage(file));
+      setPhoto(await toCardImage(file, KINDS[editKind].W, KINDS[editKind].H));
       formError.hidden = true;
     } catch {
       fail('Не получилось открыть фото — попробуйте другое');
@@ -435,6 +591,7 @@
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const isF = editKind === 'flower';
     const name = F.pname.value.trim().replace(/\s+/g, ' ');
     const desc = F.pdesc.value.trim().replace(/\s+/g, ' ');
     const priceRaw = F.pprice.value.replace(/руб\.?|₽|\s| /gi, '');
@@ -456,38 +613,105 @@
       fail('Добавьте фото');
       return;
     }
-    const data = { name, desc, price, cat: F.pcat.value, tag: F.ptag.value.trim(), img: photo, hidden: !F.pvisible.checked, alt: desc ? `${name}: ${desc}` : name };
-    const list = S.getProducts();
+    const data = { name, desc, price, img: photo, hidden: !F.pvisible.checked };
+    if (!isF) Object.assign(data, { cat: F.pcat.value, tag: F.ptag.value.trim(), alt: desc ? `${name}: ${desc}` : name });
+    const K = KINDS[editKind];
+    const list = K.get();
     const wasNew = !editingId;
     if (editingId) {
       const p = list.find((x) => x.id === editingId);
       if (p) Object.assign(p, data);
     } else {
-      list.unshift({ id: `p${Date.now().toString(36)}`, ...data });
+      list.unshift({ id: `${K.prefix}${Date.now().toString(36)}`, ...data });
     }
-    if (!S.saveProducts(list)) {
-      fail('Не хватило места в браузере для фото. Удалите лишние товары или выберите фото поменьше.');
+    if (!K.save(list)) {
+      fail('Не хватило места в браузере для фото. Удалите лишнее или выберите фото поменьше.');
       return;
     }
     closeEditor();
-    renderProducts();
-    toast(wasNew ? 'Товар добавлен — он уже в каталоге на сайте' : 'Изменения сохранены — на сайте уже новые');
+    renderList(editKind);
+    toast(wasNew ? `Добавили — ${isF ? 'цветок' : 'букет'} уже на сайте` : 'Изменения сохранены — на сайте уже новые');
+  });
+
+  /* ---------- график приёма заказов ---------- */
+  const scheduleBox = $('[data-schedule]');
+  const todayBox = $('[data-today]');
+  function slotBtn(d, s) {
+    const off = d.closed || s.past;
+    const state = s.past ? 'прошло' : d.closed ? 'день закрыт' : s.blocked ? 'закрыто' : 'свободно';
+    return `<button class="tslot${s.blocked ? ' is-blocked' : ''}${s.past ? ' is-past' : ''}" type="button" data-tslot="${d.key}:${s.id}" aria-pressed="${!s.blocked}"${off ? ' disabled' : ''}>${s.label}<small>${state}</small></button>`;
+  }
+  function renderSchedule() {
+    const days = S.availability();
+    scheduleBox.innerHTML = days.map((d) => `<article class="sday${d.closed ? ' is-closed' : ''}">
+      <div class="sday__head">
+        <b>${dayLabel(d.date, d.index)}</b>
+        <label class="switch"><input type="checkbox" data-day-open="${d.key}"${d.closed ? '' : ' checked'}><span class="switch__track" aria-hidden="true"></span><span class="switch__text">${d.closed ? 'Не принимаем' : 'Принимаем'}</span></label>
+      </div>
+      <div class="sday__slots">${d.slots.map((s) => slotBtn(d, s)).join('')}</div>
+    </article>`).join('');
+    // Ближайший день, где ещё можно что-то закрыть, — сверху на вкладке «Заказы»
+    const near = days.find((d) => d.slots.some((s) => !s.past)) || days[1];
+    todayBox.innerHTML = `<div class="today__head"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><b>${dayLabel(near.date, near.index)}</b><span>${near.closed ? 'заказы не принимаем' : 'нажмите на время, чтобы закрыть или открыть его'}</span></div>
+      <div class="today__slots">${near.slots.map((s) => slotBtn(near, s)).join('')}</div>
+      <div class="today__actions"><button class="btn btn--line btn--sm" type="button" data-day-toggle="${near.key}">${near.closed ? 'Открыть день' : 'Закрыть весь день'}</button><button class="link-btn" type="button" data-tab-go="schedule">Весь график →</button></div>`;
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-tslot],[data-day-toggle],[data-tab-go],[data-goto-order],[data-samples]');
+    if (!t) return;
+    if (t.dataset.tslot) {
+      const [key, slot] = t.dataset.tslot.split(':');
+      const scope = t.closest('[data-schedule],[data-today]'); // контейнер остаётся, кнопки перерисуются
+      S.toggleSlot(key, slot);
+      renderSchedule();
+      const again = scope ? $(`[data-tslot="${t.dataset.tslot}"]`, scope) : null;
+      again?.focus();
+      toast(again && again.classList.contains('is-blocked') ? 'Время закрыто — на сайте его не выбрать' : 'Время снова свободно на сайте');
+    } else if (t.dataset.dayToggle) {
+      S.toggleDay(t.dataset.dayToggle);
+      renderSchedule();
+      toast('График обновлён — на сайте уже видно');
+    } else if (t.dataset.tabGo) {
+      showTab(t.dataset.tabGo);
+    } else if (t.dataset.gotoOrder) {
+      gotoOrder(Number(t.dataset.gotoOrder));
+    } else if ('samples' in t.dataset) {
+      addSamples();
+    }
+  });
+  scheduleBox.addEventListener('change', (e) => {
+    const box = e.target.closest('[data-day-open]');
+    if (!box) return;
+    S.toggleDay(box.dataset.dayOpen);
+    renderSchedule();
+    $(`[data-day-open="${box.dataset.dayOpen}"]`, scheduleBox)?.focus();
+    toast(box.checked ? 'День открыт для заказов' : 'День закрыт — на сайте «нет приёма»');
   });
 
   /* ---------- сайт открыт в соседней вкладке ---------- */
   addEventListener('storage', (e) => {
     if (appView.hidden) return;
-    if (e.key === null || e.key === S.KEYS.orders) {
-      const before = knownIds;
+    const k = e.key;
+    if (k === null || k === S.KEYS.orders) {
+      const fresh = S.getOrders().filter((o) => !knownIds.has(o.id));
+      knownIds = new Set(S.getOrders().map((o) => o.id));
       if (!document.activeElement?.closest?.('[data-note]')) renderOrders();
-      const fresh = S.getOrders().filter((o) => !before.has(o.id));
-      if (fresh.length) toast(`Новый заказ № ${fresh[0].id} с сайта`);
+      if (fresh.length) {
+        const o = fresh[0];
+        toast(`Новый заказ № ${o.id} с сайта`);
+        systemNotify(`Пион: новый заказ № ${o.id}`, (o.items || []).map((i) => i.name).join(', ') || 'Покупатель напишет, что хочет', o.id);
+      }
     }
-    if (e.key === null || e.key === S.KEYS.products) renderProducts();
+    if (k === null || k === S.KEYS.products) renderList('bouquet');
+    if (k === null || k === S.KEYS.flowers) renderList('flower');
+    if (k === null || k === S.KEYS.schedule) renderSchedule();
   });
-  // раз в минуту обновляем «без движения», если человек сейчас ничего не пишет
+  // раз в минуту: напоминания и «без движения»; список не трогаем, пока человек пишет заметку
   setInterval(() => {
-    if (!appView.hidden && !document.activeElement?.closest?.('[data-note], select')) renderOrders();
+    if (appView.hidden) return;
+    checkReminders();
+    if (!document.activeElement?.closest?.('[data-note], select')) renderOrders();
+    renderSchedule();
   }, 60000);
 
   if (S.isLoggedIn()) showApp();

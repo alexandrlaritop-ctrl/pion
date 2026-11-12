@@ -32,6 +32,8 @@
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></symbol>
     <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4.5h4.5v15H14M10 8l-4 4 4 4M6 12h10"/></symbol>
     <symbol id="i-site" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5.5H4.5V6H10"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
   </defs>
 </svg>
 
@@ -69,9 +71,22 @@
       <span class="aheader__badge">Админка</span>
       <nav class="atabs" role="tablist" aria-label="Разделы админки">
         <button type="button" role="tab" data-tab="orders" aria-selected="true">Заказы <span class="atabs__count" data-new-count hidden>0</span></button>
-        <button type="button" role="tab" data-tab="products" aria-selected="false">Товары</button>
+        <button type="button" role="tab" data-tab="bouquets" aria-selected="false">Букеты</button>
+        <button type="button" role="tab" data-tab="flowers" aria-selected="false">Цветы</button>
+        <button type="button" role="tab" data-tab="schedule" aria-selected="false">График</button>
       </nav>
       <div class="aheader__actions">
+        <div class="bell">
+          <button class="abtn bell__btn" type="button" data-bell aria-expanded="false" aria-label="Напоминания"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="bell__count" data-bell-count hidden>0</span></button>
+          <div class="bell__panel" data-bell-panel hidden>
+            <div class="bell__head"><b>Напоминания</b><button class="icon-btn" type="button" data-bell-close aria-label="Закрыть"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+            <div class="bell__list" data-bell-list></div>
+            <div class="bell__foot">
+              <button class="btn btn--line btn--sm" type="button" data-notify-on>Включить уведомления</button>
+              <p class="hint" data-notify-state>Покажем уведомление о&nbsp;новом заказе и&nbsp;о&nbsp;том, что клиент давно ждёт ответа. В&nbsp;демо — пока админка открыта; в&nbsp;настоящей версии придут в&nbsp;Telegram или MAX.</p>
+            </div>
+          </div>
+        </div>
         <a class="abtn" href="index.html"><svg class="ico" aria-hidden="true"><use href="#i-site"/></svg><span>На&nbsp;сайт</span></a>
         <button class="abtn" type="button" data-logout><svg class="ico" aria-hidden="true"><use href="#i-out"/></svg><span>Выйти</span></button>
       </div>
@@ -87,21 +102,44 @@
         </div>
         <button class="btn btn--line btn--sm" type="button" data-samples>Добавить примеры заказов</button>
       </div>
-      <p class="attention" data-attention hidden></p>
+      <div class="today" data-today></div>
+      <div class="attention" data-attention hidden></div>
       <div class="chips ofilters" data-order-filters role="group" aria-label="Показать заказы"></div>
       <div class="olist" data-orders></div>
     </section>
 
-    <section class="container apanel" data-panel="products" role="tabpanel" aria-label="Товары" hidden>
+    <section class="container apanel" data-panel="bouquets" role="tabpanel" aria-label="Букеты" hidden>
       <div class="apanel__head">
         <div>
-          <h1 class="apanel__title">Товары</h1>
-          <p class="apanel__sub">Порядок здесь&nbsp;— порядок в&nbsp;каталоге на&nbsp;сайте. Изменения видны на&nbsp;сайте сразу.</p>
+          <h1 class="apanel__title">Букеты</h1>
+          <p class="apanel__sub">Порядок здесь&nbsp;— порядок в&nbsp;каталоге на&nbsp;сайте, по&nbsp;10 на&nbsp;странице. Изменения видны на&nbsp;сайте сразу.</p>
         </div>
-        <button class="btn btn--cta btn--sm" type="button" data-add-product><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Добавить товар</button>
+        <button class="btn btn--cta btn--sm" type="button" data-add-item="bouquet"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Добавить букет</button>
       </div>
-      <div class="plist" data-products></div>
-      <button class="link-btn apanel__reset" type="button" data-reset>Вернуть товары как было</button>
+      <div class="plist" data-list="bouquet"></div>
+      <button class="link-btn apanel__reset" type="button" data-reset="bouquet">Вернуть букеты как было</button>
+    </section>
+
+    <section class="container apanel" data-panel="flowers" role="tabpanel" aria-label="Цветы" hidden>
+      <div class="apanel__head">
+        <div>
+          <h1 class="apanel__title">Цветы поштучно</h1>
+          <p class="apanel__sub">Раздел «Цветы в&nbsp;наличии» на&nbsp;сайте. Закончился цветок&nbsp;— нажмите «Закончился», и&nbsp;он пропадёт с&nbsp;сайта, пока не&nbsp;вернёте.</p>
+        </div>
+        <button class="btn btn--cta btn--sm" type="button" data-add-item="flower"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>Добавить цветок</button>
+      </div>
+      <div class="plist" data-list="flower"></div>
+      <button class="link-btn apanel__reset" type="button" data-reset="flower">Вернуть цветы как было</button>
+    </section>
+
+    <section class="container apanel" data-panel="schedule" role="tabpanel" aria-label="График" hidden>
+      <div class="apanel__head">
+        <div>
+          <h1 class="apanel__title">График приёма заказов</h1>
+          <p class="apanel__sub">Не&nbsp;успеваете в&nbsp;какой-то день или час&nbsp;— закройте его. Покупатель на&nbsp;сайте увидит «нет приёма» или «закрыто» и&nbsp;не&nbsp;сможет выбрать это время.</p>
+        </div>
+      </div>
+      <div class="sched" data-schedule></div>
     </section>
   </main>
 </div>
@@ -111,12 +149,12 @@
   <div class="modal__backdrop" data-close-modal></div>
   <form class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="editor-title" data-editor-form novalidate>
     <header class="modal__head">
-      <h2 id="editor-title">Новый товар</h2>
+      <h2 id="editor-title">Новый букет</h2>
       <button class="icon-btn" type="button" data-close-modal aria-label="Закрыть"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
     </header>
     <div class="modal__body">
       <div class="photo">
-        <div class="photo__frame">
+        <div class="photo__frame" data-photo-frame>
           <img data-photo-preview alt="" hidden>
           <span class="photo__empty" data-photo-empty><svg class="ico" aria-hidden="true"><use href="#i-image"/></svg>Нет фото</span>
         </div>
@@ -128,15 +166,15 @@
         <input class="input" name="pname" maxlength="60" required>
       </label>
       <label class="field">
-        <span class="field__label">Состав</span>
-        <textarea class="input input--area" name="pdesc" maxlength="160" rows="2" placeholder="Например: розы, хризантемы и зелень"></textarea>
+        <span class="field__label" data-desc-label>Состав</span>
+        <textarea class="input input--area" name="pdesc" maxlength="160" rows="2"></textarea>
       </label>
       <div class="field-row">
         <label class="field">
-          <span class="field__label">Цена, ₽</span>
+          <span class="field__label" data-price-label>Цена, ₽</span>
           <input class="input" name="pprice" inputmode="numeric" maxlength="9" placeholder="по запросу">
         </label>
-        <label class="field">
+        <label class="field" data-only="bouquet">
           <span class="field__label">Раздел</span>
           <select class="input" name="pcat">
             <option value="bouquet">Букеты</option>
@@ -145,11 +183,11 @@
           </select>
         </label>
       </div>
-      <label class="field">
+      <label class="field" data-only="bouquet">
         <span class="field__label">Надпись на фото</span>
         <input class="input" name="ptag" maxlength="18" placeholder="Необязательно, например: Корзина">
       </label>
-      <label class="check"><input type="checkbox" name="pvisible" checked><span>Показывать на&nbsp;сайте</span></label>
+      <label class="check"><input type="checkbox" name="pvisible" checked><span data-visible-label>Показывать на&nbsp;сайте</span></label>
       <p class="form-error" data-form-error hidden></p>
     </div>
     <footer class="modal__foot">
@@ -159,7 +197,7 @@
   </form>
 </div>
 
-<!-- Подтверждение удаления -->
+<!-- Подтверждение -->
 <div class="modal modal--confirm" data-confirm hidden>
   <div class="modal__backdrop" data-confirm-no></div>
   <div class="modal__panel" role="alertdialog" aria-modal="true" aria-labelledby="confirm-text">

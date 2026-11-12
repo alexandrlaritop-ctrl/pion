@@ -73,6 +73,9 @@
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
     <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 11.5L20 4l-5.5 16-3-6.5z"/><path d="M11.5 13.5L20 4"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
   </defs>
 </svg>
 
@@ -83,7 +86,7 @@
 
 <div class="topbar">
   <div class="container topbar__in">
-    <span class="topbar__item"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span class="todo">адрес — уточним</span></span>
+    <a class="topbar__item" href="https://yandex.ru/maps/?text=%D0%93%D0%BE%D1%80%D0%BD%D0%BE-%D0%90%D0%BB%D1%82%D0%B0%D0%B9%D1%81%D0%BA%2C%20%D1%83%D0%BB.%20%D0%93%D1%80%D0%B8%D0%B3%D0%BE%D1%80%D0%B8%D1%8F%20%D0%A7%D0%BE%D1%80%D0%BE%D1%81-%D0%93%D1%83%D1%80%D0%BA%D0%B8%D0%BD%D0%B0%2C%2032" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>г. Горно-Алтайск, ул. Григория Чорос-Гуркина, 32</a>
     <span class="topbar__item"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span class="todo">часы работы — уточним</span></span>
     <a class="topbar__item" href="tel:+79609685122"><svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg>8 (960) 968-51-22</a>
     <a class="topbar__item topbar__max" href="#" data-channel="max" data-quick target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Написать в&nbsp;MAX</a>
@@ -97,13 +100,15 @@
       <span class="logo__tag" aria-hidden="true">цветочный магазин</span>
     </a>
     <nav class="nav" id="nav" aria-label="Разделы сайта">
-      <a href="#catalog">Каталог</a>
+      <a href="#catalog">Букеты</a>
+      <a href="#flowers">Цветы</a>
       <a href="#how">Как заказать</a>
       <a href="#delivery">Доставка и&nbsp;оплата</a>
       <a href="#contacts">Контакты</a>
     </nav>
     <div class="header__actions">
       <a class="header__phone" href="tel:+79609685122">8 (960) 968-51-22</a>
+      <button class="order-btn order-btn--icon" type="button" data-open-search aria-label="Поиск цветов и букетов"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
       <button class="order-btn" type="button" data-open-order>
         <svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>
         <span class="order-btn__label">Заказ</span>
@@ -183,7 +188,7 @@
   </div>
 
     <div class="hero__body" data-depth="0.08" data-fade>
-      <p class="hero__lead">Авторские букеты, корзины и&nbsp;композиции в&nbsp;коробках. Выберите букет на&nbsp;сайте&nbsp;— и&nbsp;отправьте заказ флористу в&nbsp;мессенджер в&nbsp;пару касаний.</p>
+      <p class="hero__lead">Авторские букеты, корзины и&nbsp;композиции в&nbsp;коробках в&nbsp;Горно-Алтайске. Выберите букет на&nbsp;сайте&nbsp;— и&nbsp;отправьте заказ флористу в&nbsp;мессенджер в&nbsp;пару касаний.</p>
       <div class="hero__actions">
         <a class="btn btn--cta" href="#catalog">Смотреть каталог <svg class="ico ico--move" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         <button class="btn btn--ghost" type="button" data-open-order>Оформить заказ</button>
@@ -212,11 +217,14 @@
         <h2 class="h2" id="catalog-title">Наши букеты</h2>
         <span class="orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
       </div>
+      <div class="catalog__tools">
+      <button class="search-trigger" type="button" data-open-search><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><span>Поиск: розы, хризантемы, корзина…</span></button>
       <div class="chips" role="group" aria-label="Показать в каталоге">
         <button class="chip" type="button" data-filter="all" aria-pressed="true">Все</button>
         <button class="chip" type="button" data-filter="bouquet" aria-pressed="false">Букеты</button>
         <button class="chip" type="button" data-filter="box" aria-pressed="false">Корзины и&nbsp;коробки</button>
         <button class="chip" type="button" data-filter="gift" aria-pressed="false">Подарки</button>
+      </div>
       </div>
     </div>
     <p class="draft-note"><b>Демо:</b> товары, цены и&nbsp;фото меняются в&nbsp;<a href="admin.html">админке</a>. В&nbsp;демо-версии изменения видны только в&nbsp;этом браузере.</p>
@@ -310,6 +318,23 @@
         </div>
       </article>
     </div>
+    <nav class="pager" data-pager="bouquets" aria-label="Страницы каталога букетов" hidden></nav>
+  </div>
+</section>
+
+<section class="flowers" id="flowers" aria-labelledby="flowers-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="kicker kicker--light">Поштучно</p>
+        <h2 class="h2" id="flowers-title">Цветы в&nbsp;наличии</h2>
+        <span class="orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+      </div>
+      <p class="flowers__lead">Соберём букет из&nbsp;цветов, которые есть сегодня: добавьте нужные и&nbsp;сколько штук&nbsp;— флорист подскажет по&nbsp;сочетанию.</p>
+    </div>
+    <p class="draft-note"><b>Демо:</b> список цветов и&nbsp;цены&nbsp;— пример. Магазин отмечает в&nbsp;админке, что есть в&nbsp;наличии.</p>
+    <div class="fgrid" data-flowers></div>
+    <nav class="pager" data-pager="flowers" aria-label="Страницы списка цветов" hidden></nav>
   </div>
 </section>
 
@@ -370,7 +395,7 @@
       <article class="dcard reveal" style="--d:.08s">
         <span class="dcard__icon"><svg class="ico" aria-hidden="true"><use href="#i-store"/></svg></span>
         <h3>Самовывоз</h3>
-        <ul><li>Адрес: <span class="todo">уточним</span></li><li>Часы работы: <span class="todo">уточним</span></li><li>Букет соберём к&nbsp;согласованному времени</li></ul>
+        <ul><li>Адрес: г.&nbsp;Горно-Алтайск, ул.&nbsp;Григория Чорос-Гуркина,&nbsp;32</li><li>Часы работы: <span class="todo">уточним</span></li><li>Букет соберём к&nbsp;согласованному времени</li></ul>
       </article>
       <article class="dcard reveal" style="--d:.16s">
         <span class="dcard__icon"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg></span>
@@ -400,10 +425,9 @@
         <a class="msg-btn" href="#" data-channel="whatsapp" data-quick target="_blank" rel="noopener">WhatsApp</a>
       </div>
       <ul class="contacts__list">
-        <li><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span>Адрес: <span class="todo">уточним</span></span></li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span>г.&nbsp;Горно-Алтайск, ул.&nbsp;Григория Чорос-Гуркина,&nbsp;32 · <a class="contacts__map" href="https://yandex.ru/maps/?text=%D0%93%D0%BE%D1%80%D0%BD%D0%BE-%D0%90%D0%BB%D1%82%D0%B0%D0%B9%D1%81%D0%BA%2C%20%D1%83%D0%BB.%20%D0%93%D1%80%D0%B8%D0%B3%D0%BE%D1%80%D0%B8%D1%8F%20%D0%A7%D0%BE%D1%80%D0%BE%D1%81-%D0%93%D1%83%D1%80%D0%BA%D0%B8%D0%BD%D0%B0%2C%2032" target="_blank" rel="noopener">как добраться</a></span></li>
         <li><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span>Часы работы: <span class="todo">уточним</span></span></li>
       </ul>
-      <p class="draft-note draft-note--deep"><b>Заметка к&nbsp;черновику:</b> ссылку «Как добраться» на&nbsp;Яндекс Карты добавим, когда уточним адрес. Встроенную карту не&nbsp;ставим: она записывает cookie посетителей.</p>
     </div>
     <div class="contacts__visual" aria-hidden="true">
       <div class="contacts__ring" data-depth="0.05"></div>
@@ -440,7 +464,7 @@
     </div>
     <div>
       <h3 class="footer__title">Продавец</h3>
-      <p class="footer__req"><span class="todo">ИП или&nbsp;ООО — название</span><br>ИНН <span class="todo">уточним</span><br>ОГРН / ОГРНИП <span class="todo">уточним</span><br>Адрес: <span class="todo">уточним</span></p>
+      <p class="footer__req">ИП Блажевич&nbsp;Е.&nbsp;Р.<br>ИНН <span class="todo">уточним</span><br>ОГРНИП <span class="todo">уточним</span><br>Адрес магазина: г.&nbsp;Горно-Алтайск, ул.&nbsp;Григория Чорос-Гуркина,&nbsp;32</p>
     </div>
   </div>
   <div class="container footer__bottom">
@@ -467,10 +491,9 @@
       </div>
       <div class="field">
         <span class="field__label" id="when-label">Когда нужен букет</span>
-        <div class="field__row" role="group" aria-labelledby="when-label">
-          <input class="input" type="date" data-date aria-label="Дата">
-          <input class="input" type="time" data-time aria-label="Время" step="900">
-        </div>
+        <div class="days" data-days role="group" aria-labelledby="when-label"></div>
+        <div class="slots" data-slots role="group" aria-label="Время"></div>
+        <p class="when-hint" data-when-hint></p>
       </div>
       <fieldset class="field">
         <legend class="field__label">Как получить</legend>
@@ -499,6 +522,18 @@
       <p class="order__demo">Демо: заказ с&nbsp;номером сохраняется в&nbsp;этом браузере&nbsp;— <a href="admin.html">откройте админку</a>, чтобы его увидеть.</p>
     </footer>
   </aside>
+</div>
+
+<div class="search" data-search hidden>
+  <div class="search__backdrop" data-close-search></div>
+  <div class="search__panel" role="dialog" aria-modal="true" aria-label="Поиск цветов и букетов">
+    <div class="search__bar">
+      <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+      <input class="search__input" type="search" data-search-input placeholder="Например: розы, хризантемы, корзина" aria-label="Что ищем" autocomplete="off">
+      <button class="icon-btn" type="button" data-close-search aria-label="Закрыть поиск"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="search__results" data-search-results aria-live="polite"></div>
+  </div>
 </div>
 
 <div class="obar" data-obar>

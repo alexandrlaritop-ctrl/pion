@@ -1,6 +1,7 @@
 /*
  * Пион — демо-версия сайта.
- * Каталог берётся из PionStore (его меняет демо-админка, данные — в этом браузере).
+ * Букеты и цветы поштучно берутся из PionStore (их меняет демо-админка, данные — в этом браузере).
+ * В каталогах по 10 штук на странице. Дни и часы, закрытые в админке, выбрать нельзя.
  * Заказ получает номер, сохраняется для админки и открывается в мессенджере покупателя.
  * Имя и телефон сайт не спрашивает — покупатель пишет их в чате.
  */
@@ -15,6 +16,7 @@
     max: '', // ссылка на чат магазина в MAX
   };
   const store = window.PionStore || null;
+  const PAGE = 10; // товаров на одной странице каталога
 
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
@@ -224,89 +226,223 @@
   }
 
   /* ---------- заказ: элементы и состояние ---------- */
-  const cart = new Map(); // id товара → количество
-  let products = new Map(); // id → { name, price, img, card }
+  const cart = new Map(); // id → количество
+  let products = new Map(); // id → { kind: bouquet|flower|custom, name, price, img }
   let lastSent = null; // { id, sig } — номер уже записан для этой корзины
+  let selDay = null; // выбранный день yyyy-mm-dd
+  let selSlot = null; // выбранный интервал
+  let whenHint = '';
 
   const drawer = $('#order');
   const panel = $('.order__panel', drawer);
   const list = $('[data-list]', drawer);
   const empty = $('[data-empty]', drawer);
-  const dateInput = $('[data-date]', drawer);
-  const timeInput = $('[data-time]', drawer);
+  const daysBox = $('[data-days]', drawer);
+  const slotsBox = $('[data-slots]', drawer);
+  const hintBox = $('[data-when-hint]', drawer);
   const textBox = $('[data-text]', drawer);
   const toastBox = $('[data-toast]');
   const statusBox = $('[data-status]', drawer);
   const obarText = $('[data-obar-text]');
+  const SLOTS = store ? store.SLOTS : [];
 
-  const pad = (n) => String(n).padStart(2, '0');
-  const now = new Date();
-  dateInput.min = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-
-  /* ---------- каталог из данных ---------- */
+  /* ---------- каталоги: букеты и цветы поштучно, по 10 на странице ---------- */
   const grid = $('.grid');
+  const fgrid = $('[data-flowers]');
   const chips = $$('.chip');
   let filter = 'all';
+  let bouquetList = [];
+  let flowerList = [];
+  const pages = { bouquets: 0, flowers: 0 };
 
   function cardHtml(p, i) {
     const price = p.price ? `<span class="price">${money(p.price, ' ')}</span>` : '<span class="price price--ask">цена по&nbsp;запросу</span>';
     const tag = p.tag ? `<span class="card__tag">${esc(p.tag)}</span>` : '';
-    return `<article class="card reveal" style="--d:${((i % 4) * 0.06).toFixed(2)}s" data-id="${esc(p.id)}" data-cat="${esc(p.cat)}">`
+    return `<article class="card reveal" style="--d:${((i % 5) * 0.05).toFixed(2)}s" data-id="${esc(p.id)}" data-cat="${esc(p.cat)}">`
       + `<div class="card__media" data-window="0.06"><div class="card__zoom"><img src="${esc(p.img)}" alt="${esc(p.alt || p.name)}" width="800" height="800" loading="lazy" decoding="async"></div>${tag}</div>`
       + `<div class="card__body"><h3 class="card__title">${nbsp(esc(p.name))}</h3>`
       + `<p class="card__desc">${nbsp(esc(p.desc || ''))}</p>`
       + '<span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>'
-      + `${price}<div class="card__action"></div></div></article>`;
+      + `${price}<div class="card__action" data-action-for="${esc(p.id)}"></div></div></article>`;
+  }
+  function flowerHtml(p, i) {
+    const price = p.price ? `<span class="fcard__price">${money(p.price, ' ')}<small>&nbsp;/ шт</small></span>` : '<span class="fcard__price fcard__price--ask">цена по&nbsp;запросу</span>';
+    return `<article class="fcard reveal" style="--d:${((i % 5) * 0.05).toFixed(2)}s" data-id="${esc(p.id)}">`
+      + `<div class="fcard__photo"><img src="${esc(p.img)}" alt="${esc(p.name)}" width="360" height="360" loading="lazy" decoding="async"></div>`
+      + `<h3 class="fcard__name">${nbsp(esc(p.name))}</h3>`
+      + `<p class="fcard__desc">${nbsp(esc(p.desc || ''))}</p>`
+      + `${price}<div class="card__action" data-action-for="${esc(p.id)}"></div></article>`;
   }
 
-  function applyFilter() {
-    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filter === filter)));
-    $$('.card', grid).forEach((card) => {
-      card.hidden = filter !== 'all' && card.dataset.cat !== filter;
-    });
-    request();
+  function renderPager(kind, count) {
+    const nav = $(`[data-pager="${kind}"]`);
+    if (!nav) return;
+    nav.hidden = count < 2;
+    if (count < 2) {
+      nav.innerHTML = '';
+      return;
+    }
+    const p = pages[kind];
+    nav.innerHTML = `<button class="pager__arrow" type="button" data-page-step="${kind}:-1" aria-label="Предыдущая страница"${p === 0 ? ' disabled' : ''}><svg class="ico" aria-hidden="true"><use href="#i-left"/></svg></button>`
+      + Array.from({ length: count }, (_, i) => `<button class="pager__dot${i === p ? ' is-active' : ''}" type="button" data-page-go="${kind}:${i}" aria-label="Страница ${i + 1} из ${count}"${i === p ? ' aria-current="page"' : ''}></button>`).join('')
+      + `<button class="pager__arrow" type="button" data-page-step="${kind}:1" aria-label="Следующая страница"${p === count - 1 ? ' disabled' : ''}><svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>`;
   }
-  chips.forEach((chip) => chip.addEventListener('click', () => {
-    filter = chip.dataset.filter;
-    applyFilter();
-  }));
+  function renderGrid(kind, scroll) {
+    const isB = kind === 'bouquets';
+    const box = isB ? grid : fgrid;
+    if (!box) return;
+    const items = isB ? bouquetList.filter((p) => filter === 'all' || p.cat === filter) : flowerList;
+    const count = Math.max(1, Math.ceil(items.length / PAGE));
+    pages[kind] = clamp(pages[kind], 0, count - 1);
+    const slice = items.slice(pages[kind] * PAGE, pages[kind] * PAGE + PAGE);
+    box.innerHTML = slice.length
+      ? slice.map(isB ? cardHtml : flowerHtml).join('')
+      : `<p class="grid__empty">${isB ? 'Скоро здесь появятся букеты.' : 'Список цветов обновляется — напишите флористу, что нужно.'}</p>`;
+    renderPager(kind, count);
+    renderActions(box);
+    observeReveal(box);
+    collectWindows();
+    if (scroll) box.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+  }
 
   function mountCatalog() {
     if (store) {
-      const items = store.getProducts().filter((p) => !p.hidden);
-      grid.innerHTML = items.length ? items.map(cardHtml).join('') : '<p class="grid__empty">Скоро здесь появятся букеты.</p>';
-      products = new Map(items.map((p) => [p.id, { name: p.name, price: p.price || 0, img: p.img, card: grid.querySelector(`[data-id="${CSS.escape(p.id)}"]`) }]));
-      const cats = new Set(items.map((p) => p.cat));
+      bouquetList = store.getProducts().filter((p) => !p.hidden);
+      flowerList = store.getFlowers().filter((p) => !p.hidden);
+      products = new Map([
+        ...bouquetList.map((p) => [p.id, { kind: 'bouquet', name: p.name, price: p.price || 0, img: p.img }]),
+        ...flowerList.map((p) => [p.id, { kind: 'flower', name: p.name, price: p.price || 0, img: p.img }]),
+      ]);
+      const cats = new Set(bouquetList.map((p) => p.cat));
       chips.forEach((c) => { c.hidden = c.dataset.filter !== 'all' && !cats.has(c.dataset.filter); });
       if (filter !== 'all' && !cats.has(filter)) filter = 'all';
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filter === filter)));
+      renderGrid('bouquets');
+      renderGrid('flowers');
+      const flowersSection = $('#flowers');
+      if (flowersSection) flowersSection.hidden = !flowerList.length;
+      const flowersLink = $('.nav a[href="#flowers"]');
+      if (flowersLink) flowersLink.hidden = !flowerList.length;
     } else {
       // запасной вариант: карточки, которые уже есть в HTML
-      products = new Map($$('.card', grid).map((card) => [card.dataset.id, { name: card.dataset.name, price: Number(card.dataset.price) || 0, img: $('img', card).getAttribute('src'), card }]));
+      products = new Map($$('.card', grid).map((card) => [card.dataset.id, { kind: 'bouquet', name: card.dataset.name, price: Number(card.dataset.price) || 0, img: $('img', card).getAttribute('src') }]));
+      const flowersSection = $('#flowers');
+      if (flowersSection) flowersSection.hidden = true;
     }
-    products.set('custom', { name: 'Индивидуальный букет', price: 0, custom: true });
+    products.set('custom', { kind: 'custom', name: 'Индивидуальный букет', price: 0 });
     for (const id of [...cart.keys()]) if (!products.has(id)) cart.delete(id);
-    applyFilter();
-    observeReveal(grid);
-    collectWindows();
+  }
+
+  chips.forEach((chip) => chip.addEventListener('click', () => {
+    filter = chip.dataset.filter;
+    pages.bouquets = 0;
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+    renderGrid('bouquets');
+  }));
+
+  /* ---------- поиск цветов и букетов ---------- */
+  const searchEl = $('[data-search]');
+  const searchInput = $('[data-search-input]');
+  const searchResults = $('[data-search-results]');
+  let searchOpener = null;
+  const norm = (s) => String(s).toLowerCase().replace(/ё/g, 'е');
+  // «розы» → «роз», «хризантемы» → «хризантем»: находим слово в любом падеже
+  const stem = (w) => (w.length >= 4 ? w.replace(/(ами|ями|ов|ев|ей|ам|ям|ах|ях|ы|и|а|я|е|у|ю|о)$/, '') : w);
+  function matches(item, query) {
+    const words = norm(query).split(/[^a-zа-я0-9]+/).filter(Boolean).map(stem);
+    const hay = norm(`${item.name} ${item.desc || ''} ${item.tag || ''} ${store && item.cat ? store.CATS[item.cat] : ''}`);
+    return words.length > 0 && words.every((w) => hay.includes(w));
+  }
+  function resultHtml(p, isFlower) {
+    const price = p.price ? `${money(p.price, ' ')}${isFlower ? ' / шт' : ''}` : 'цена по запросу';
+    return `<li class="sres"><img class="sres__img${isFlower ? ' sres__img--round' : ''}" src="${esc(p.img)}" alt="" width="64" height="64" loading="lazy">`
+      + `<div class="sres__info"><b>${esc(p.name)}</b><span>${esc(p.desc || '')}</span><em>${price}</em></div>`
+      + `<div class="sres__action card__action" data-action-for="${esc(p.id)}"></div></li>`;
+  }
+  function renderSearch() {
+    if (searchEl.hidden) return;
+    const q = searchInput.value.trim();
+    if (!q) {
+      searchResults.innerHTML = '<p class="search__hint">Начните вводить: например, «розы», «хризантемы» или&nbsp;«корзина».</p>';
+      return;
+    }
+    const b = bouquetList.filter((p) => matches(p, q));
+    const f = flowerList.filter((p) => matches(p, q));
+    if (!b.length && !f.length) {
+      searchResults.innerHTML = `<div class="search__none"><p>По запросу «${esc(q)}» ничего не&nbsp;нашли.</p><p>Флорист может собрать букет по&nbsp;вашему описанию.</p><button class="btn btn--cta btn--sm" type="button" data-custom>Написать флористу</button></div>`;
+      return;
+    }
+    const group = (title, items, isFlower) => (items.length ? `<section class="search__group"><h3>${title} <span>${items.length}</span></h3><ul>${items.map((p) => resultHtml(p, isFlower)).join('')}</ul></section>` : '');
+    searchResults.innerHTML = group('Букеты', b, false) + group('Цветы поштучно', f, true);
+    renderActions(searchResults);
+  }
+  function openSearch(from) {
+    searchOpener = from || document.activeElement;
+    setMenu(false);
+    searchEl.hidden = false;
+    document.documentElement.classList.add('is-locked');
+    renderSearch();
+    searchInput.focus();
+  }
+  function closeSearch() {
+    if (searchEl.hidden) return;
+    searchEl.hidden = true;
+    if (drawer.hidden) document.documentElement.classList.remove('is-locked');
+    searchOpener?.focus?.({ preventScroll: true });
+  }
+  searchInput.addEventListener('input', renderSearch);
+
+  /* ---------- когда нужен букет: дни и интервалы из графика магазина ---------- */
+  const shortDate = (d) => d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
+  function availability() {
+    if (store) return store.availability();
+    return [];
+  }
+  function renderWhen() {
+    const days = availability();
+    if (!days.length) {
+      daysBox.closest('.field').hidden = true;
+      return;
+    }
+    if (selDay && !days.some((d) => d.key === selDay && d.open)) {
+      selDay = null;
+      selSlot = null;
+      whenHint = 'Магазин закрыл этот день — выберите другой.';
+    }
+    const day = days.find((d) => d.key === selDay);
+    if (day && selSlot && !day.slots.some((s) => s.id === selSlot && !s.blocked && !s.past)) {
+      selSlot = null;
+      whenHint = 'Это время магазин закрыл — выберите другое.';
+    }
+    daysBox.innerHTML = days.map((d) => {
+      const name = d.index === 0 ? 'Сегодня' : d.index === 1 ? 'Завтра' : d.date.toLocaleDateString('ru-RU', { weekday: 'short' });
+      const late = d.slots.every((s) => s.past || s.blocked) && d.slots.some((s) => s.past);
+      const sub = d.closed ? 'нет приёма' : d.open ? shortDate(d.date) : late ? 'уже поздно' : 'всё занято';
+      const on = d.key === selDay;
+      return `<button class="day${on ? ' is-on' : ''}" type="button" data-day="${d.key}" aria-pressed="${on}"${d.open ? '' : ' disabled'}><b>${name}</b><span>${sub}</span></button>`;
+    }).join('');
+    slotsBox.hidden = !day;
+    slotsBox.innerHTML = day
+      ? day.slots.map((s) => {
+        const off = s.blocked || s.past;
+        const on = s.id === selSlot;
+        return `<button class="slot${on ? ' is-on' : ''}" type="button" data-slot="${s.id}" aria-pressed="${on}"${off ? ' disabled' : ''}>${s.label}${s.blocked ? '<small>закрыто</small>' : s.past ? '<small>прошло</small>' : ''}</button>`;
+      }).join('')
+      : '';
+    hintBox.textContent = whenHint || (day ? (selSlot ? '' : 'Выберите удобное время или договоритесь в чате.') : 'Выберите день — покажем свободное время. Можно не выбирать и договориться в чате.');
   }
 
   /* ---------- заказ: текст, номер, мессенджеры ---------- */
-  const total = () => {
-    let n = 0;
-    cart.forEach((q) => { n += q; });
-    return n;
-  };
-  const way = () => $('input[name="way"]:checked', drawer)?.value || 'доставка';
+  const way =() => $('input[name="way"]:checked', drawer)?.value || 'доставка';
   function when() {
-    const parts = [];
-    if (dateInput.value) {
-      const [y, m, d] = dateInput.value.split('-').map(Number);
-      parts.push(new Date(y, m - 1, d).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' }));
-    }
-    if (timeInput.value) parts.push(`к ${timeInput.value}`);
-    return parts.join(', ');
+    if (!selDay) return '';
+    const d = store.parseDay(selDay);
+    let s = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+    const slot = SLOTS.find((x) => x.id === selSlot);
+    if (slot) s += `, ${slot.label}`;
+    return s;
   }
-  const signature = () => JSON.stringify([[...cart], dateInput.value, timeInput.value, way()]);
+  const signature = () => JSON.stringify([[...cart], selDay, selSlot, way()]);
   // номер, который получит заказ (или уже получил, если корзина не менялась)
   const orderNumber = () => (lastSent && lastSent.sig === signature() ? lastSent.id : store ? store.peekNextOrderId() : null);
 
@@ -320,13 +456,14 @@
       let allPriced = true;
       cart.forEach((q, id) => {
         const p = products.get(id);
-        if (p.custom) {
+        if (p.kind === 'custom') {
           lines.push('— индивидуальный букет, пожелания опишу в чате');
           allPriced = false;
           return;
         }
         let line = `— ${p.name}`;
-        if (q > 1) line += ` × ${q}`;
+        if (p.kind === 'flower') line += ` × ${q} шт`;
+        else if (q > 1) line += ` × ${q}`;
         if (p.price) {
           line += `, ${money(p.price * q)}`;
           sum += p.price * q;
@@ -356,9 +493,10 @@
     }
     const items = [...cart].map(([id, q]) => {
       const p = products.get(id);
-      return { id, name: p.name, qty: q, price: p.price || null };
+      return { id, kind: p.kind, name: p.name, qty: q, price: p.price || null };
     });
-    const order = store.createOrder({ items, date: dateInput.value, time: timeInput.value, when: when(), way: way(), channel });
+    const slot = SLOTS.find((x) => x.id === selSlot);
+    const order = store.createOrder({ items, date: selDay || '', time: slot ? slot.label : '', when: when(), way: way(), channel });
     if (!order) return null;
     lastSent = { id: order.id, sig };
     return order.id;
@@ -423,27 +561,32 @@
   /* ---------- заказ: отрисовка ---------- */
   const stepperHtml = (id, q, small) =>
     `<div class="stepper${small ? ' stepper--sm' : ''}" role="group" aria-label="Количество"><button type="button" data-dec="${esc(id)}" aria-label="Убрать один">−</button><output>${q}</output><button type="button" data-inc="${esc(id)}" aria-label="Добавить ещё один">+</button></div>`;
-
-  function renderCard(card, id) {
-    const q = cart.get(id) || 0;
-    const box = $('.card__action', card);
-    if (!box || box.dataset.q === String(q)) return;
-    const focused = box.contains(document.activeElement) ? document.activeElement : null;
-    const kind = focused ? (focused.dataset.add ? 'add' : focused.dataset.inc ? 'inc' : 'dec') : null;
-    box.dataset.q = String(q);
-    box.innerHTML = q
-      ? stepperHtml(id, q, false)
-      : `<button class="btn btn--action btn--block" type="button" data-add="${esc(id)}"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В заказ</button>`;
-    if (!kind) return;
-    const target = q ? $(kind === 'add' ? '[data-inc]' : `[data-${kind}]`, box) : $('[data-add]', box);
-    target?.focus();
+  function actionHtml(id, q) {
+    if (q) return stepperHtml(id, q, false);
+    const label = products.get(id)?.kind === 'flower' ? 'Добавить' : 'В заказ';
+    return `<button class="btn btn--action btn--block" type="button" data-add="${esc(id)}"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>${label}</button>`;
+  }
+  // Кнопки «В заказ» / счётчики во всех местах, где виден товар: каталог и поиск.
+  function renderActions(root = document) {
+    $$('[data-action-for]', root).forEach((box) => {
+      const id = box.dataset.actionFor;
+      const q = cart.get(id) || 0;
+      if (box.dataset.q === String(q)) return;
+      const focused = box.contains(document.activeElement) ? document.activeElement : null;
+      const kind = focused ? (focused.dataset.add ? 'add' : focused.dataset.inc ? 'inc' : 'dec') : null;
+      box.dataset.q = String(q);
+      box.innerHTML = actionHtml(id, q);
+      if (!kind) return;
+      const target = q ? $(kind === 'add' ? '[data-inc]' : `[data-${kind}]`, box) : $('[data-add]', box);
+      target?.focus();
+    });
   }
 
   function itemRow(id, q) {
     const p = products.get(id);
     const li = document.createElement('li');
     li.className = 'oitem';
-    if (p.custom) {
+    if (p.kind === 'custom') {
       li.innerHTML = '<span class="oitem__ph"><svg aria-hidden="true"><use href="#logo-o"/></svg></span>';
     } else {
       const img = document.createElement('img');
@@ -451,6 +594,7 @@
       img.alt = '';
       img.width = 56;
       img.height = 56;
+      if (p.kind === 'flower') img.className = 'is-round';
       li.append(img);
     }
     const info = document.createElement('div');
@@ -459,13 +603,14 @@
     name.textContent = p.name;
     const sub = document.createElement('div');
     sub.className = 'oitem__sub';
-    if (p.custom) sub.textContent = 'Пожелания опишете в чате';
-    else if (p.price) sub.textContent = q > 1 ? `${money(p.price, ' ')} × ${q} = ${money(p.price * q, ' ')}` : money(p.price, ' ');
-    else sub.textContent = 'Цену подтвердит флорист';
+    const unit = p.kind === 'flower' ? ' шт' : '';
+    if (p.kind === 'custom') sub.textContent = 'Пожелания опишете в чате';
+    else if (p.price) sub.textContent = q > 1 ? `${money(p.price, ' ')} × ${q}${unit} = ${money(p.price * q, ' ')}` : money(p.price, ' ');
+    else sub.textContent = p.kind === 'flower' ? `Поштучно · цену подтвердит флорист` : 'Цену подтвердит флорист';
     info.append(name, sub);
     li.append(info);
     const controls = document.createElement('div');
-    controls.innerHTML = p.custom
+    controls.innerHTML = p.kind === 'custom'
       ? '<button class="icon-btn" type="button" data-remove="custom" aria-label="Убрать индивидуальный букет"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>'
       : stepperHtml(id, q, true);
     li.append(controls);
@@ -473,13 +618,13 @@
   }
 
   function render() {
-    const n = total();
+    const n = cart.size; // позиции: букет, роза поштучно и т.д.
     const active = document.activeElement;
     const keep = active && list.contains(active)
       ? (['inc', 'dec', 'remove'].map((k) => [k, active.dataset[k]]).find(([, v]) => v !== undefined) || null)
       : null;
 
-    products.forEach((p, id) => { if (p.card) renderCard(p.card, id); });
+    renderActions();
     list.replaceChildren(...[...cart].map(([id, q]) => itemRow(id, q)));
     empty.hidden = cart.size > 0;
 
@@ -490,7 +635,7 @@
       el.textContent = String(n);
       el.hidden = n === 0;
     });
-    obarText.textContent = `В заказе ${n} ${plural(n, ['букет', 'букета', 'букетов'])}`;
+    obarText.textContent = `В заказе ${n} ${plural(n, ['позиция', 'позиции', 'позиций'])}`;
     document.body.classList.toggle('has-order', n > 0);
 
     if (keep) {
@@ -502,9 +647,13 @@
   /* ---------- окно заказа ---------- */
   let opener = null;
   function openOrder(from) {
+    closeSearch();
     opener = from || document.activeElement;
     setMenu(false);
     toastBox.classList.remove('is-on');
+    whenHint = '';
+    renderWhen(); // «сегодня» могло уже пройти
+    render();
     drawer.hidden = false;
     document.documentElement.classList.add('is-locked');
     void drawer.offsetWidth; // чтобы сработала анимация выезда
@@ -522,13 +671,17 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && header.classList.contains('is-open')) setMenu(false);
+    if (e.key === 'Escape' && !searchEl.hidden) {
+      closeSearch();
+      return;
+    }
     if (drawer.hidden) return;
     if (e.key === 'Escape') {
       closeOrder();
       return;
     }
     if (e.key !== 'Tab') return;
-    const focusable = $$('a[href], button, input', panel).filter((el) => el.offsetParent !== null && !el.disabled);
+    const focusable = $$('a[href], button:not([disabled]), input', panel).filter((el) => el.offsetParent !== null);
     if (!focusable.length) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -542,13 +695,13 @@
   });
 
   document.addEventListener('click', (e) => {
-    const el = e.target.closest('[data-add],[data-inc],[data-dec],[data-remove],[data-custom],[data-open-order],[data-close-order],[data-copy],[data-channel]');
+    const el = e.target.closest('[data-add],[data-inc],[data-dec],[data-remove],[data-custom],[data-open-order],[data-close-order],[data-copy],[data-channel],[data-open-search],[data-close-search],[data-day],[data-slot],[data-page-go],[data-page-step]');
     if (!el) return;
     const d = el.dataset;
     if (d.add) {
       cart.set(d.add, 1);
       render();
-      toast(`«${products.get(d.add).name}» — в заказе`);
+      if (searchEl.hidden) toast(`«${products.get(d.add).name}» — в заказе`);
     } else if (d.inc) {
       cart.set(d.inc, (cart.get(d.inc) || 0) + 1);
       render();
@@ -568,6 +721,25 @@
       openOrder(el);
     } else if ('closeOrder' in d) {
       closeOrder();
+    } else if ('openSearch' in d) {
+      openSearch(el);
+    } else if ('closeSearch' in d) {
+      closeSearch();
+    } else if (d.day) {
+      selDay = selDay === d.day ? null : d.day;
+      selSlot = null;
+      whenHint = '';
+      renderWhen();
+      render();
+    } else if (d.slot) {
+      selSlot = selSlot === d.slot ? null : d.slot;
+      whenHint = '';
+      renderWhen();
+      render();
+    } else if (d.pageGo || d.pageStep) {
+      const [kind, val] = (d.pageGo || d.pageStep).split(':');
+      pages[kind] = d.pageGo ? Number(val) : pages[kind] + Number(val);
+      renderGrid(kind, true);
     } else if ('copy' in d) {
       const id = recordOrder('copy');
       const text = orderText();
@@ -584,23 +756,28 @@
     }
   });
 
-  [dateInput, timeInput].forEach((input) => input.addEventListener('input', render));
   $$('input[name="way"]', drawer).forEach((input) => input.addEventListener('change', render));
   $$('[data-channel][data-quick]').forEach((a) => { a.href = channelHref(a.dataset.channel, QUICK_TEXT); });
   if (!touch.matches) $$('[data-touch-only]').forEach((el) => { el.hidden = true; });
 
-  // Админка открыта в другой вкладке этого браузера — обновляем каталог и номера заказов.
+  // Админка открыта в другой вкладке этого браузера — обновляем каталоги, график и номера заказов.
   addEventListener('storage', (e) => {
     if (!store) return;
-    if (e.key === null || e.key === store.KEYS.products) {
+    const k = e.key;
+    if (k === null || k === store.KEYS.products || k === store.KEYS.flowers) {
       mountCatalog();
-      render();
-    } else if (e.key === store.KEYS.orders || e.key === store.KEYS.seq) {
+      renderSearch();
       render();
     }
+    if (k === null || k === store.KEYS.schedule) {
+      renderWhen();
+      render();
+    }
+    if (k === store.KEYS.orders || k === store.KEYS.seq) render();
   });
 
   mountCatalog();
+  renderWhen();
   render();
   request();
 })();
