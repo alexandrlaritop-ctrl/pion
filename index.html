@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ru" data-theme="bordo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пион — цветочный магазин: букеты, корзины и композиции</title>
+<meta name="description" content="Авторские букеты, корзины и композиции в коробках. Выберите букет на сайте и отправьте заказ флористу в мессенджер — без регистрации и оплаты на сайте.">
+<!-- Черновик: убрать noindex при запуске -->
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1a0710">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<!-- Черновик: шрифты с Google Fonts. На боевом сайте положим их в папку fonts/, чтобы не было запросов к Google. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Great+Vibes&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // Расцветка черновика: ?theme=bordo | beige | sage
+  (function () {
+    var t = new URLSearchParams(location.search).get('theme');
+    if (t !== 'beige' && t !== 'sage') t = 'bordo';
+    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.classList.add('js');
+  })();
+</script>
+</head>
+<body>
+
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g-petal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" style="stop-color:var(--petal-1)"/>
+      <stop offset=".55" style="stop-color:var(--petal-2)"/>
+      <stop offset="1" style="stop-color:var(--petal-3)"/>
+    </linearGradient>
+    <linearGradient id="g-petal-soft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" style="stop-color:var(--petal-soft-1)"/>
+      <stop offset="1" style="stop-color:var(--petal-soft-2)"/>
+    </linearGradient>
+    <symbol id="i-petal" viewBox="0 0 40 60"><path fill="url(#g-petal)" d="M20 58C6 50 0 34 4 20 7 10 14 4 20 9c6-5 13 1 16 11 4 14-2 30-16 38z"/><path fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1" d="M20 14c-1.5 14-1.5 28 0 40"/></symbol>
+    <symbol id="i-petal-soft" viewBox="0 0 40 60"><path fill="url(#g-petal-soft)" d="M20 58C6 50 0 34 4 20 7 10 14 4 20 9c6-5 13 1 16 11 4 14-2 30-16 38z"/><path fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1" d="M20 14c-1.5 14-1.5 28 0 40"/></symbol>
+    <!-- Знак логотипа: цветок вместо буквы «О» -->
+    <symbol id="logo-o" viewBox="0 0 64 64">
+      <path d="M32 10A9.43 9.43 0 0 1 47.56 16.44A9.43 9.43 0 0 1 54 32A9.43 9.43 0 0 1 47.56 47.56A9.43 9.43 0 0 1 32 54A9.43 9.43 0 0 1 16.44 47.56A9.43 9.43 0 0 1 10 32A9.43 9.43 0 0 1 16.44 16.44A9.43 9.43 0 0 1 32 10Z"/>
+      <path d="M38.14 19.42A6.56 6.56 0 0 1 45.66 28.95A6.56 6.56 0 0 1 42.9 40.78A6.56 6.56 0 0 1 31.93 46A6.56 6.56 0 0 1 21.01 40.67A6.56 6.56 0 0 1 18.37 28.82A6.56 6.56 0 0 1 25.99 19.36A6.56 6.56 0 0 1 38.14 19.42Z"/>
+      <path d="M32 25.4A3.88 3.88 0 0 1 38.28 29.96A3.88 3.88 0 0 1 35.88 37.34A3.88 3.88 0 0 1 28.12 37.34A3.88 3.88 0 0 1 25.72 29.96A3.88 3.88 0 0 1 32 25.4Z"/>
+      <circle cx="32" cy="32" r="1.8"/>
+    </symbol>
+    <symbol id="i-peony-big" viewBox="0 0 200 200">
+      <path d="M100 16A30.63 30.63 0 0 1 149.37 32.04A30.63 30.63 0 0 1 179.89 74.04A30.63 30.63 0 0 1 179.89 125.96A30.63 30.63 0 0 1 149.37 167.96A30.63 30.63 0 0 1 100 184A30.63 30.63 0 0 1 50.63 167.96A30.63 30.63 0 0 1 20.11 125.96A30.63 30.63 0 0 1 20.11 74.04A30.63 30.63 0 0 1 50.63 32.04A30.63 30.63 0 0 1 100 16Z"/>
+      <path d="M123.26 36.1A26.05 26.05 0 0 1 158.89 66A26.05 26.05 0 0 1 166.97 111.81A26.05 26.05 0 0 1 143.71 152.09A26.05 26.05 0 0 1 100 168A26.05 26.05 0 0 1 56.29 152.09A26.05 26.05 0 0 1 33.03 111.81A26.05 26.05 0 0 1 41.11 66A26.05 26.05 0 0 1 76.74 36.1A26.05 26.05 0 0 1 123.26 36.1Z"/>
+      <path d="M100 48A21.89 21.89 0 0 1 136.77 63.23A21.89 21.89 0 0 1 152 100A21.89 21.89 0 0 1 136.77 136.77A21.89 21.89 0 0 1 100 152A21.89 21.89 0 0 1 63.23 136.77A21.89 21.89 0 0 1 48 100A21.89 21.89 0 0 1 63.23 63.23A21.89 21.89 0 0 1 100 48Z"/>
+      <path d="M116.22 66.74A17.34 17.34 0 0 1 136.11 91.95A17.34 17.34 0 0 1 128.81 123.21A17.34 17.34 0 0 1 99.82 137A17.34 17.34 0 0 1 70.96 122.92A17.34 17.34 0 0 1 63.97 91.59A17.34 17.34 0 0 1 84.11 66.58A17.34 17.34 0 0 1 116.22 66.74Z"/>
+      <path d="M100 77A11.96 11.96 0 0 1 119.92 88.5A11.96 11.96 0 0 1 119.92 111.5A11.96 11.96 0 0 1 100 123A11.96 11.96 0 0 1 80.08 111.5A11.96 11.96 0 0 1 80.08 88.5A11.96 11.96 0 0 1 100 77Z"/>
+      <path d="M106.47 91.1A6.47 6.47 0 0 1 110.46 103.4A6.47 6.47 0 0 1 100 111A6.47 6.47 0 0 1 89.54 103.4A6.47 6.47 0 0 1 93.53 91.1A6.47 6.47 0 0 1 106.47 91.1Z"/>
+      <circle cx="100" cy="100" r="2.5"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.1-7-11.4A7 7 0 0 1 19 9.6C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.6" r="2.6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.5 3.5h3l1.8 4.6-2.3 1.4a11.5 11.5 0 0 0 5.5 5.5l1.4-2.3 4.6 1.8v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4.5 5h15a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-5.5 4v-4h0A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5z"/><path d="M8 10h8M8 13h5"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5.5 8h13l-1 12.5h-11z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16.2 9.5"/></symbol>
+    <symbol id="i-flower" viewBox="0 0 24 24"><path d="M12 21v-7.5"/><path d="M12 13.5c-3.2 0-5-2.4-5-5.4V4.6l2.6 1.6L12 3.5l2.4 2.7L17 4.6v3.5c0 3-1.8 5.4-5 5.4z"/><path d="M12 18c-1.6-2-4.2-2.5-6.2-1.4 1 2.1 3.7 3 6.2 1.4zM12 18c1.6-2 4.2-2.5 6.2-1.4-1 2.1-3.7 3-6.2 1.4z"/></symbol>
+    <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2.5 6.5h11v9.5h-11zM13.5 9.5h4l3 3.2V16h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+    <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 10l1.6-5.5h12.8L20 10"/><path d="M4 10h16v.5a2.7 2.7 0 0 1-5.3.6 2.7 2.7 0 0 1-5.4 0A2.7 2.7 0 0 1 4 10.5z"/><path d="M5.5 12.5V20h13v-7.5M10 20v-4.5h4V20"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6.5" width="18" height="13" rx="2"/><path d="M6 6.5l9-3 1.2 3M15.5 13h3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 2.8v5.7c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V5.8z"/><path d="M8.6 12.2l2.4 2.4 4.4-4.6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 11.5L20 4l-5.5 16-3-6.5z"/><path d="M11.5 13.5L20 4"/></symbol>
+  </defs>
+</svg>
+
+<div class="draft-bar" role="note">
+  <span><b>Черновик дизайна.</b> Фото — ваши; тексты, условия и&nbsp;цены — примерные, подставим ваши.</span>
+  <span class="themes" role="group" aria-label="Расцветка сайта">
+    <span class="themes__label">Расцветка:</span>
+    <a class="theme-btn" href="?theme=bordo" data-set-theme="bordo" aria-pressed="true"><i style="--a:#3b1022;--b:#d9b77e"></i>Бордо</a>
+    <a class="theme-btn" href="?theme=beige" data-set-theme="beige" aria-pressed="false"><i style="--a:#efe4d6;--b:#6e1e34"></i>Беж</a>
+    <a class="theme-btn" href="?theme=sage" data-set-theme="sage" aria-pressed="false"><i style="--a:#1d2c24;--b:#dcc293"></i>Шалфей</a>
+  </span>
+</div>
+
+<div class="topbar">
+  <div class="container topbar__in">
+    <span class="topbar__item"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span class="todo">адрес — уточним</span></span>
+    <span class="topbar__item"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span class="todo">часы работы — уточним</span></span>
+    <a class="topbar__item" href="tel:+79609685122"><svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg>8 (960) 968-51-22</a>
+    <a class="topbar__item topbar__max" href="#" data-channel="max" data-quick target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Написать в&nbsp;MAX</a>
+  </div>
+</div>
+
+<header class="header">
+  <div class="container header__in">
+    <a class="logo" href="#top" aria-label="Пион, цветочный магазин — в начало страницы">
+      <span class="logo__word" aria-hidden="true">ПИ<svg class="logo__o"><use href="#logo-o"/></svg>Н</span>
+      <span class="logo__tag" aria-hidden="true">цветочный магазин</span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Разделы сайта">
+      <a href="#catalog">Каталог</a>
+      <a href="#how">Как заказать</a>
+      <a href="#delivery">Доставка и&nbsp;оплата</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <div class="header__actions">
+      <a class="header__phone" href="tel:+79609685122">8 (960) 968-51-22</a>
+      <button class="order-btn" type="button" data-open-order>
+        <svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>
+        <span class="order-btn__label">Заказ</span>
+        <span class="order-btn__count" data-count hidden>0</span>
+      </button>
+      <button class="burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="hero grain" data-scene="top" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__head" data-depth="0.08" data-fade>
+      <p class="kicker">Свежие цветы с&nbsp;любовью <svg class="ico ico--fill" aria-hidden="true"><use href="#i-sparkle"/></svg></p>
+      <h1 class="hero__title" id="hero-title">Букеты,<span class="hero__l2">которые говорят</span><em>за&nbsp;вас</em></h1>
+    </div>
+
+  <div class="hero__media" data-depth="0.1">
+    <div class="slides">
+      <figure class="slide is-active" style="--cx:49%;--cy:52%;--rx:41%;--ry:44%">
+        <div class="slide__frame">
+          <img class="slide__bg" src="img/hero-1.jpg" alt="" width="1400" height="1400" fetchpriority="high">
+          <span class="slide__tint"></span>
+          <img class="slide__fg" src="img/hero-1.jpg" alt="Композиция в коробке: розы, хризантемы и сирень" width="1400" height="1400" fetchpriority="high">
+        </div>
+      </figure>
+      <figure class="slide" style="--cx:50%;--cy:47%;--rx:47%;--ry:43%">
+        <div class="slide__frame">
+          <img class="slide__bg" src="img/hero-2.jpg" alt="" width="887" height="887" decoding="async">
+          <span class="slide__tint"></span>
+          <img class="slide__fg" src="img/hero-2.jpg" alt="Корзина: хризантемы, гвоздики, кустовые розы и альстромерии" width="887" height="887" decoding="async">
+        </div>
+      </figure>
+      <figure class="slide" style="--cx:49%;--cy:46%;--rx:42%;--ry:39%">
+        <div class="slide__frame">
+          <img class="slide__bg" src="img/hero-3.jpg" alt="" width="1200" height="1200" decoding="async">
+          <span class="slide__tint"></span>
+          <img class="slide__fg" src="img/hero-3.jpg" alt="Букет из белых хризантем с орхидеями" width="1200" height="1200" decoding="async">
+        </div>
+      </figure>
+    </div>
+
+    <div class="fall" data-fall aria-hidden="true">
+      <span class="far" style="--x:24%;--s:18px;--t:13s;--dl:-1s;--dr:50px;--r:300deg;--y:12%"><svg><use href="#i-petal"/></svg></span>
+      <span style="--x:33%;--s:28px;--t:11s;--dl:-6s;--dr:-40px;--r:-260deg;--y:62%"><svg><use href="#i-petal"/></svg></span>
+      <span class="far" style="--x:41%;--s:16px;--t:15s;--dl:-9s;--dr:70px;--r:420deg;--y:30%"><svg><use href="#i-petal-soft"/></svg></span>
+      <span style="--x:48%;--s:24px;--t:12s;--dl:-3s;--dr:-60px;--r:-340deg;--y:80%"><svg><use href="#i-petal"/></svg></span>
+      <span class="far" style="--x:56%;--s:20px;--t:14s;--dl:-11s;--dr:40px;--r:280deg;--y:20%"><svg><use href="#i-petal"/></svg></span>
+      <span style="--x:63%;--s:32px;--t:10s;--dl:-5s;--dr:-30px;--r:-220deg;--y:48%"><svg><use href="#i-petal"/></svg></span>
+      <span class="far" style="--x:70%;--s:18px;--t:16s;--dl:-13s;--dr:60px;--r:380deg;--y:72%"><svg><use href="#i-petal-soft"/></svg></span>
+      <span style="--x:77%;--s:26px;--t:12.5s;--dl:-8s;--dr:-50px;--r:-300deg;--y:8%"><svg><use href="#i-petal"/></svg></span>
+      <span style="--x:84%;--s:22px;--t:13.5s;--dl:-2s;--dr:45px;--r:260deg;--y:56%"><svg><use href="#i-petal"/></svg></span>
+      <span class="far" style="--x:90%;--s:15px;--t:17s;--dl:-10s;--dr:-35px;--r:-400deg;--y:36%"><svg><use href="#i-petal"/></svg></span>
+      <span class="far" style="--x:52%;--s:14px;--t:18s;--dl:-15s;--dr:30px;--r:200deg;--y:90%"><svg><use href="#i-petal-soft"/></svg></span>
+      <span style="--x:95%;--s:28px;--t:11.5s;--dl:-4s;--dr:-60px;--r:-280deg;--y:24%"><svg><use href="#i-petal"/></svg></span>
+    </div>
+
+    <span class="petal" data-depth="-0.35" data-tilt="-30" style="left:30%;top:74%;width:38px;--t:6.8s" aria-hidden="true"><svg><use href="#i-petal"/></svg></span>
+    <span class="petal" data-depth="-0.5" data-tilt="40" style="left:90%;top:64%;width:32px;--t:7.4s;--dl:-2s" aria-hidden="true"><svg><use href="#i-petal"/></svg></span>
+
+    <div class="hero__badge" data-depth="-0.14" data-rot="0.05" aria-hidden="true">
+      <svg class="badge" viewBox="0 0 120 120">
+        <defs><path id="badge-path" d="M60 60m-45 0a45 45 0 1 1 90 0a45 45 0 1 1-90 0"/></defs>
+        <circle cx="60" cy="60" r="58"/>
+        <text font-family="Manrope, Arial, sans-serif" font-size="9.6" font-weight="700"><textPath href="#badge-path" textLength="280" lengthAdjust="spacing">ПИОН · ЦВЕТОЧНЫЙ МАГАЗИН ·</textPath></text>
+        <use href="#logo-o" x="42" y="42" width="36" height="36" fill="none" stroke-width="3.6"/>
+      </svg>
+    </div>
+
+    <div class="dots" role="group" aria-label="Фото на первом экране">
+      <button class="dot is-active" type="button" aria-label="Фото 1 из 3" aria-pressed="true"></button>
+      <button class="dot" type="button" aria-label="Фото 2 из 3" aria-pressed="false"></button>
+      <button class="dot" type="button" aria-label="Фото 3 из 3" aria-pressed="false"></button>
+    </div>
+  </div>
+
+    <div class="hero__body" data-depth="0.08" data-fade>
+      <p class="hero__lead">Авторские букеты, корзины и&nbsp;композиции в&nbsp;коробках. Выберите букет на&nbsp;сайте&nbsp;— и&nbsp;отправьте заказ флористу в&nbsp;мессенджер в&nbsp;пару касаний.</p>
+      <div class="hero__actions">
+        <a class="btn btn--cta" href="#catalog">Смотреть каталог <svg class="ico ico--move" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <button class="btn btn--ghost" type="button" data-open-order>Оформить заказ</button>
+      </div>
+      <p class="hero__note"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg>Без регистрации и&nbsp;оплаты на&nbsp;сайте&nbsp;— всё согласуем в&nbsp;чате</p>
+    </div>
+  </div>
+</section>
+
+<section class="benefits" id="benefits" aria-label="Почему с нами удобно">
+  <div class="container">
+    <ul class="benefits__card">
+      <li class="benefit reveal"><span class="benefit__icon"><svg class="ico" aria-hidden="true"><use href="#i-flower"/></svg></span><div><b>Букет под повод</b><span>Подскажем с&nbsp;составом и&nbsp;цветовой гаммой</span></div></li>
+      <li class="benefit reveal" style="--d:.08s"><span class="benefit__icon"><svg class="ico" aria-hidden="true"><use href="#i-truck"/></svg></span><div><b>Доставка и&nbsp;самовывоз</b><span>Условия&nbsp;— в&nbsp;разделе «Доставка и&nbsp;оплата»</span></div></li>
+      <li class="benefit reveal" style="--d:.16s"><span class="benefit__icon"><svg class="ico" aria-hidden="true"><use href="#i-card"/></svg></span><div><b>Открытка к&nbsp;букету</b><span>Напишите текст&nbsp;— подпишем</span></div></li>
+      <li class="benefit reveal" style="--d:.24s"><span class="benefit__icon"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg></span><div><b>Заказ в&nbsp;мессенджере</b><span>Без регистрации и&nbsp;оплаты на&nbsp;сайте</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<section class="catalog" id="catalog" aria-labelledby="catalog-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="kicker kicker--light">Каталог</p>
+        <h2 class="h2" id="catalog-title">Наши букеты</h2>
+        <span class="orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+      </div>
+      <div class="chips" role="group" aria-label="Показать в каталоге">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">Все</button>
+        <button class="chip" type="button" data-filter="bouquet" aria-pressed="false">Букеты</button>
+        <button class="chip" type="button" data-filter="box" aria-pressed="false">Корзины и&nbsp;коробки</button>
+        <button class="chip" type="button" data-filter="gift" aria-pressed="false">Подарки</button>
+      </div>
+    </div>
+    <p class="draft-note"><b>Заметка к&nbsp;черновику:</b> фото&nbsp;— ваши работы, названия и&nbsp;составы написали по&nbsp;фото. Цены подставим ваши&nbsp;— сейчас стоит только цена с&nbsp;вашего фото (3&nbsp;400&nbsp;₽).</p>
+
+    <div class="grid">
+      <article class="card reveal" data-id="basket" data-cat="box" data-name="Корзина с цветами" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-basket.jpg" alt="Корзина: белые хризантемы, розовые гвоздики, кустовые розы и альстромерии" width="800" height="800" loading="lazy" decoding="async"></div><span class="card__tag">Корзина</span></div>
+        <div class="card__body">
+          <h3 class="card__title">Корзина с&nbsp;цветами</h3>
+          <p class="card__desc">Хризантемы, гвоздики, кустовые розы и&nbsp;альстромерии</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="basket"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--d:.06s" data-id="box" data-cat="box" data-name="Композиция в коробке" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-box.jpg" alt="Композиция в коробке: розы, белые хризантемы и сирень" width="800" height="800" loading="lazy" decoding="async"></div><span class="card__tag">В&nbsp;коробке</span></div>
+        <div class="card__body">
+          <h3 class="card__title">Композиция в&nbsp;коробке</h3>
+          <p class="card__desc">Розы, хризантемы и&nbsp;сирень</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="box"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--d:.12s" data-id="orchids" data-cat="bouquet" data-name="Хризантемы с орхидеями" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-orchids.jpg" alt="Букет: белые хризантемы и три орхидеи" width="800" height="800" loading="lazy" decoding="async"></div></div>
+        <div class="card__body">
+          <h3 class="card__title">Хризантемы с&nbsp;орхидеями</h3>
+          <p class="card__desc">Белые хризантемы и&nbsp;три орхидеи</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="orchids"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--d:.18s" data-id="peach" data-cat="bouquet" data-name="Хризантемы с гвоздиками" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-peach.jpg" alt="Букет: белые хризантемы и персиковые гвоздики" width="800" height="800" loading="lazy" decoding="async"></div></div>
+        <div class="card__body">
+          <h3 class="card__title">Хризантемы с&nbsp;гвоздиками</h3>
+          <p class="card__desc">Белые хризантемы и&nbsp;персиковые гвоздики</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="peach"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" data-id="roses" data-cat="bouquet" data-name="Букет с пудровыми розами" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-roses.jpg" alt="Букет: пудровые розы, гипсофила и зелень в персиковой упаковке" width="760" height="760" loading="lazy" decoding="async"></div></div>
+        <div class="card__body">
+          <h3 class="card__title">Букет с&nbsp;пудровыми розами</h3>
+          <p class="card__desc">Розы, гипсофила и&nbsp;зелень</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="roses"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--d:.06s" data-id="mint" data-cat="bouquet" data-name="Букет из хризантем" data-price="3400">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-mint.jpg" alt="Букет: белые хризантемы и нежно-розовые цветы в мятной упаковке" width="800" height="800" loading="lazy" decoding="async"></div></div>
+        <div class="card__body">
+          <h3 class="card__title">Букет из&nbsp;хризантем</h3>
+          <p class="card__desc">Белые хризантемы и&nbsp;нежные сезонные цветы</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price">3&nbsp;400&nbsp;₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="mint"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--d:.12s" data-id="yellow" data-cat="bouquet" data-name="Солнечный букет" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-yellow.jpg" alt="Букет: жёлтые и белые кустовые хризантемы" width="800" height="800" loading="lazy" decoding="async"></div></div>
+        <div class="card__body">
+          <h3 class="card__title">Солнечный букет</h3>
+          <p class="card__desc">Жёлтые и&nbsp;белые кустовые хризантемы</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="yellow"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--d:.18s" data-id="gift" data-cat="gift" data-name="Розы и мишка" data-price="">
+        <div class="card__media" data-window="0.06"><div class="card__zoom"><img src="img/p-gift.jpg" alt="Подарок: красные розы и плюшевый мишка в подарочной сумке" width="800" height="800" loading="lazy" decoding="async"></div><span class="card__tag">Подарок</span></div>
+        <div class="card__body">
+          <h3 class="card__title">Розы и&nbsp;мишка</h3>
+          <p class="card__desc">Красные розы и&nbsp;плюшевый мишка в&nbsp;подарочной сумке</p>
+          <span class="card__orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+          <span class="price price--todo" title="Цену подставим вашу">— ₽</span>
+          <div class="card__action"><button class="btn btn--action btn--block" type="button" data-add="gift"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg>В&nbsp;заказ</button></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="custom grain" data-scene aria-labelledby="custom-title">
+  <span class="petal petal--far" data-depth="0.22" data-tilt="-20" style="left:6%;top:10%;width:26px;--t:8s" aria-hidden="true"><svg><use href="#i-petal"/></svg></span>
+  <span class="petal" data-depth="-0.3" data-tilt="55" style="right:7%;bottom:9%;width:34px;--t:7s;--dl:-2s" aria-hidden="true"><svg><use href="#i-petal"/></svg></span>
+  <div class="container custom__grid">
+    <div class="custom__col custom__col--l" aria-hidden="true">
+      <figure class="arch" data-depth="0.12"><img src="img/p-peach.jpg" alt="" width="800" height="800" loading="lazy" decoding="async"></figure>
+      <figure class="arch" data-depth="-0.08"><img src="img/p-roses.jpg" alt="" width="760" height="760" loading="lazy" decoding="async"></figure>
+    </div>
+    <div class="custom__text reveal">
+      <p class="kicker">Индивидуальный заказ</p>
+      <h2 class="h2" id="custom-title">Не&nbsp;нашли свой букет? <em>соберём по&nbsp;вашему желанию</em></h2>
+      <span class="orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+      <p>Расскажите флористу о&nbsp;поводе, любимых цветах и&nbsp;бюджете&nbsp;— он предложит состав, и&nbsp;вы вместе согласуете букет.</p>
+      <button class="btn btn--cta" type="button" data-custom>Написать флористу <svg class="ico ico--move" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+    <div class="custom__col custom__col--r" aria-hidden="true">
+      <figure class="arch" data-depth="-0.1"><img src="img/p-mint.jpg" alt="" width="800" height="800" loading="lazy" decoding="async"></figure>
+      <figure class="arch" data-depth="0.1"><img src="img/p-yellow.jpg" alt="" width="800" height="800" loading="lazy" decoding="async"></figure>
+    </div>
+  </div>
+</section>
+
+<section class="how grain" id="how" data-scene aria-labelledby="how-title">
+  <svg class="how__bg" data-depth="0.14" data-rot="0.02" aria-hidden="true"><use href="#i-peony-big"/></svg>
+  <div class="container">
+    <div class="section-head section-head--center">
+      <p class="kicker">Просто и&nbsp;без регистрации</p>
+      <h2 class="h2" id="how-title">Как заказать</h2>
+      <span class="orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+    </div>
+    <ol class="steps">
+      <li class="step reveal"><span class="step__num" aria-hidden="true">I</span><h3>Выберите букет</h3><p>Нажмите «В&nbsp;заказ» у&nbsp;понравившихся&nbsp;— можно несколько. Или опишите свой букет.</p></li>
+      <li class="step reveal" style="--d:.1s"><span class="step__num" aria-hidden="true">II</span><h3>Укажите дату и&nbsp;способ</h3><p>Когда нужен букет и&nbsp;как его получить: доставка или самовывоз. Имя и&nbsp;телефон на&nbsp;сайте вводить не&nbsp;нужно.</p></li>
+      <li class="step reveal" style="--d:.2s"><span class="step__num" aria-hidden="true">III</span><h3>Отправьте в&nbsp;мессенджер</h3><p>Откроется чат с&nbsp;готовым сообщением. Флорист подтвердит наличие, цену, оплату и&nbsp;время.</p></li>
+    </ol>
+    <p class="how__note reveal"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg><span>Букет на&nbsp;фото&nbsp;— пример работы. Если какого-то цветка не&nbsp;окажется в&nbsp;наличии, флорист предложит равноценную замену и&nbsp;согласует её с&nbsp;вами.</span></p>
+  </div>
+</section>
+
+<section class="delivery" id="delivery" aria-labelledby="delivery-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="kicker kicker--light">Условия</p>
+        <h2 class="h2" id="delivery-title">Доставка и&nbsp;оплата</h2>
+        <span class="orn" aria-hidden="true"><i></i><svg><use href="#logo-o"/></svg><i></i></span>
+      </div>
+    </div>
+    <div class="dgrid">
+      <article class="dcard reveal">
+        <span class="dcard__icon"><svg class="ico" aria-hidden="true"><use href="#i-truck"/></svg></span>
+        <h3>Доставка</h3>
+        <ul><li>Куда возим: <span class="todo">уточним</span></li><li>Стоимость: <span class="todo">уточним</span></li><li>Время доставки согласуем в&nbsp;чате при заказе</li></ul>
+      </article>
+      <article class="dcard reveal" style="--d:.08s">
+        <span class="dcard__icon"><svg class="ico" aria-hidden="true"><use href="#i-store"/></svg></span>
+        <h3>Самовывоз</h3>
+        <ul><li>Адрес: <span class="todo">уточним</span></li><li>Часы работы: <span class="todo">уточним</span></li><li>Букет соберём к&nbsp;согласованному времени</li></ul>
+      </article>
+      <article class="dcard reveal" style="--d:.16s">
+        <span class="dcard__icon"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg></span>
+        <h3>Оплата</h3>
+        <ul><li>На&nbsp;сайте оплата не&nbsp;принимается&nbsp;— данные карты вводить не&nbsp;нужно</li><li>Способы оплаты: <span class="todo">уточним</span></li><li>Итоговую сумму флорист назовёт в&nbsp;чате до&nbsp;оплаты</li></ul>
+      </article>
+      <article class="dcard dcard--wide reveal">
+        <span class="dcard__icon"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span>
+        <div>
+          <h3>Если что-то не&nbsp;так</h3>
+          <p>Проверьте букет при получении. Права покупателя защищает Закон «О&nbsp;защите прав потребителей», а&nbsp;порядок возврата и&nbsp;замены описан в&nbsp;<a href="usloviya.html">условиях продажи</a>.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="contacts grain" id="contacts" data-scene aria-labelledby="contacts-title">
+  <div class="container contacts__grid">
+    <div class="contacts__info reveal">
+      <p class="kicker">Контакты</p>
+      <h2 class="h2" id="contacts-title">Напишите или&nbsp;позвоните</h2>
+      <a class="contacts__phone" href="tel:+79609685122">8 (960) 968-51-22</a>
+      <div class="messengers">
+        <a class="msg-btn msg-btn--main" href="#" data-channel="max" data-quick target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-send"/></svg>MAX</a>
+        <a class="msg-btn" href="#" data-channel="telegram" data-quick target="_blank" rel="noopener">Telegram</a>
+        <a class="msg-btn" href="#" data-channel="whatsapp" data-quick target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+      <ul class="contacts__list">
+        <li><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span>Адрес: <span class="todo">уточним</span></span></li>
+        <li><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg><span>Часы работы: <span class="todo">уточним</span></span></li>
+      </ul>
+      <p class="draft-note draft-note--deep"><b>Заметка к&nbsp;черновику:</b> ссылку «Как добраться» на&nbsp;Яндекс Карты добавим, когда уточним адрес. Встроенную карту не&nbsp;ставим: она записывает cookie посетителей.</p>
+    </div>
+    <div class="contacts__visual" aria-hidden="true">
+      <div class="contacts__ring" data-depth="0.05"></div>
+      <svg class="contacts__peony" data-depth="0.1" data-rot="0.04"><use href="#i-peony-big"/></svg>
+      <span class="petal" data-depth="-0.32" data-tilt="-30" style="left:8%;top:12%;width:9%;--t:7s"><svg><use href="#i-petal"/></svg></span>
+      <span class="petal petal--far" data-depth="0.2" data-tilt="60" style="left:78%;top:22%;width:7%;--t:9s;--dl:-3s"><svg><use href="#i-petal-soft"/></svg></span>
+      <span class="petal" data-depth="-0.22" data-tilt="18" style="left:64%;top:76%;width:10%;--t:6.5s;--dl:-1s"><svg><use href="#i-petal"/></svg></span>
+      <span class="petal petal--far" data-depth="0.28" data-tilt="-75" style="left:14%;top:70%;width:6%;--t:8s;--dl:-5s"><svg><use href="#i-petal"/></svg></span>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a class="logo" href="#top" aria-label="Пион, цветочный магазин — в начало страницы">
+        <span class="logo__word" aria-hidden="true">ПИ<svg class="logo__o"><use href="#logo-o"/></svg>Н</span>
+        <span class="logo__tag" aria-hidden="true">цветочный магазин</span>
+      </a>
+      <p class="footer__about">Букеты, корзины и&nbsp;композиции в&nbsp;коробках.</p>
+      <a class="footer__phone" href="tel:+79609685122">8 (960) 968-51-22</a>
+    </div>
+    <div>
+      <h3 class="footer__title">Покупателям</h3>
+      <ul class="footer__links">
+        <li><a href="#catalog">Каталог</a></li>
+        <li><a href="#how">Как заказать</a></li>
+        <li><a href="#delivery">Доставка и&nbsp;оплата</a></li>
+        <li><a href="usloviya.html">Условия продажи и&nbsp;возврата</a></li>
+        <li><a href="politika.html">Политика обработки персональных данных</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="footer__title">Продавец</h3>
+      <p class="footer__req"><span class="todo">ИП или&nbsp;ООО — название</span><br>ИНН <span class="todo">уточним</span><br>ОГРН / ОГРНИП <span class="todo">уточним</span><br>Адрес: <span class="todo">уточним</span></p>
+    </div>
+  </div>
+  <div class="container footer__bottom">
+    <span>© 2026 «Пион»</span>
+    <span>Сайт не&nbsp;использует cookie и&nbsp;счётчики посещений. Текст заказа уходит только в&nbsp;выбранный вами мессенджер.</span>
+  </div>
+</footer>
+
+<div class="order" id="order" hidden>
+  <div class="order__backdrop" data-close-order></div>
+  <aside class="order__panel" role="dialog" aria-modal="true" aria-labelledby="order-title" tabindex="-1">
+    <header class="order__head">
+      <h2 id="order-title">Ваш заказ</h2>
+      <button class="icon-btn" type="button" data-close-order aria-label="Закрыть"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button>
+    </header>
+    <div class="order__body">
+      <ul class="order__list" data-list></ul>
+      <div class="order__empty" data-empty>
+        <p><b>Пока ничего не&nbsp;выбрано.</b> Добавьте букет из&nbsp;каталога или опишите флористу, какой хотите.</p>
+        <div class="order__empty-actions">
+          <a class="btn btn--line btn--sm" href="#catalog" data-close-order>В&nbsp;каталог</a>
+          <button class="btn btn--line btn--sm" type="button" data-custom>Индивидуальный букет</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field__label" id="when-label">Когда нужен букет</span>
+        <div class="field__row" role="group" aria-labelledby="when-label">
+          <input class="input" type="date" data-date aria-label="Дата">
+          <input class="input" type="time" data-time aria-label="Время" step="900">
+        </div>
+      </div>
+      <fieldset class="field">
+        <legend class="field__label">Как получить</legend>
+        <div class="seg-group">
+          <label class="seg"><input type="radio" name="way" value="доставка" checked><span>Доставка</span></label>
+          <label class="seg"><input type="radio" name="way" value="самовывоз"><span>Самовывоз</span></label>
+        </div>
+      </fieldset>
+      <p class="order__privacy"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg><span>Имя, телефон и&nbsp;адрес на&nbsp;сайте не&nbsp;нужны&nbsp;— сообщите их флористу в&nbsp;чате. Сайт ничего не&nbsp;сохраняет.</span></p>
+      <div class="order__preview">
+        <div class="order__preview-head"><span>Сообщение флористу</span><button class="link-btn" type="button" data-copy>Скопировать</button></div>
+        <pre data-text></pre>
+      </div>
+    </div>
+    <footer class="order__foot">
+      <p class="order__send">Отправить заказ</p>
+      <div class="order__channels">
+        <a class="ch ch--main" href="#" data-channel="max" target="_blank" rel="noopener">MAX</a>
+        <a class="ch" href="#" data-channel="telegram" target="_blank" rel="noopener">Telegram</a>
+        <a class="ch" href="#" data-channel="whatsapp" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="ch" href="#" data-channel="sms" data-touch-only>SMS</a>
+      </div>
+      <p class="order__status" data-status role="status" aria-live="polite"></p>
+      <a class="order__call" href="tel:+79609685122">или позвоните: <b>8 (960) 968-51-22</b></a>
+      <p class="order__legal">Заказ принят, когда флорист подтвердит его в&nbsp;чате: наличие, итоговую цену, оплату и&nbsp;время.</p>
+    </footer>
+  </aside>
+</div>
+
+<div class="obar" data-obar>
+  <button type="button" data-open-order><span data-obar-text>В заказе 1 букет</span><span class="obar__go">Оформить <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></span></button>
+</div>
+
+<div class="toast" role="status" aria-live="polite" data-toast></div>
+
+<script src="script.js"></script>
+</body>
+</html>

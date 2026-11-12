@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Логотип «Пион»</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Manrope:wght@500;700;800&display=swap">
+<style>
+  body { margin: 0; background: #ece6df; font-family: Manrope, Arial, sans-serif; color: #2b0d17; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px; }
+  h1 { margin: 0 0 6px; font: 600 40px/1.1 'Cormorant Garamond', serif; }
+  .lead { margin: 0 0 28px; color: #6c4b55; }
+  .panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .panel { display: grid; justify-items: center; gap: 30px; padding: 48px 20px 36px; border-radius: 22px; }
+  .panel h2 { margin: 0; font: 800 12px/1 Manrope, sans-serif; letter-spacing: .2em; text-transform: uppercase; opacity: .7; }
+  .bordo { background: #1a0710; color: #fbf6f0; --acc: #d9b77e; }
+  .beige { background: #f2e8db; color: #2a1b15; --acc: #8f6a3a; }
+  .sage { background: #15211b; color: #f6f8f2; --acc: #dcc293; }
+  .swatches { display: flex; gap: 8px; }
+  .swatches i { width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(127, 127, 127, .35); }
+
+  /* сам логотип: в слове ПИОН вместо «О» — цветок */
+  .lockup { display: inline-grid; justify-items: center; padding: 14px 18px; }
+  .word { display: flex; align-items: center; padding-left: .1em; font: 600 1em/1 'Cormorant Garamond', serif; letter-spacing: .1em; }
+  .o { position: relative; top: -.015em; width: .74em; height: .74em; margin-right: .1em; fill: none; stroke: var(--acc); stroke-width: 3.6; stroke-linejoin: round; }
+  .o circle { fill: var(--acc); stroke: none; }
+  .tag { margin-top: .14em; padding-left: .26em; font: 700 .225em/1 Manrope, sans-serif; letter-spacing: .26em; text-transform: uppercase; color: var(--acc); white-space: nowrap; }
+  .emblem { display: block; fill: none; stroke: var(--acc); }
+
+  .exports { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 30px; }
+  .exports > * { background: repeating-conic-gradient(#d9d2ca 0 25%, #efe9e3 0 50%) 0 0 / 16px 16px; border-radius: 14px; }
+  .on-dark { color: #fbf6f0; --acc: #d9b77e; }
+  .on-light { color: #2a1b15; --acc: #8f6a3a; }
+  .avatar { padding: 0; background: none !important; }
+  .note { margin-top: 26px; color: #6c4b55; font-size: 14px; }
+  @media (max-width: 900px) { .panels { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo-o" viewBox="0 0 64 64">
+    <path d="M32 10A9.43 9.43 0 0 1 47.56 16.44A9.43 9.43 0 0 1 54 32A9.43 9.43 0 0 1 47.56 47.56A9.43 9.43 0 0 1 32 54A9.43 9.43 0 0 1 16.44 47.56A9.43 9.43 0 0 1 10 32A9.43 9.43 0 0 1 16.44 16.44A9.43 9.43 0 0 1 32 10Z"/>
+    <path d="M38.14 19.42A6.56 6.56 0 0 1 45.66 28.95A6.56 6.56 0 0 1 42.9 40.78A6.56 6.56 0 0 1 31.93 46A6.56 6.56 0 0 1 21.01 40.67A6.56 6.56 0 0 1 18.37 28.82A6.56 6.56 0 0 1 25.99 19.36A6.56 6.56 0 0 1 38.14 19.42Z"/>
+    <path d="M32 25.4A3.88 3.88 0 0 1 38.28 29.96A3.88 3.88 0 0 1 35.88 37.34A3.88 3.88 0 0 1 28.12 37.34A3.88 3.88 0 0 1 25.72 29.96A3.88 3.88 0 0 1 32 25.4Z"/>
+    <circle cx="32" cy="32" r="1.8"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+  <h1>Логотип «Пион»</h1>
+  <p class="lead">В&nbsp;слове вместо буквы «О»&nbsp;— цветок пиона, вид сверху. Ниже&nbsp;— как он смотрится в&nbsp;трёх расцветках сайта, и&nbsp;файлы для печати и&nbsp;соцсетей.</p>
+
+  <div class="panels" id="sheet">
+    <section class="panel bordo">
+      <h2>Бордо</h2>
+      <div class="lockup" style="font-size:88px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+      <div class="lockup" style="font-size:40px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+      <svg class="emblem" viewBox="0 0 120 120" width="110" height="110"><circle cx="60" cy="60" r="57" stroke-width="1.2"/><circle cx="60" cy="60" r="51" stroke-width=".6"/><use href="#logo-o" x="26" y="26" width="68" height="68" stroke-width="2.4"/></svg>
+      <div class="swatches"><i style="background:#1a0710"></i><i style="background:#5a162d"></i><i style="background:#d9b77e"></i><i style="background:#fbf6f0"></i></div>
+    </section>
+    <section class="panel beige">
+      <h2>Беж</h2>
+      <div class="lockup" style="font-size:88px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+      <div class="lockup" style="font-size:40px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+      <svg class="emblem" viewBox="0 0 120 120" width="110" height="110"><circle cx="60" cy="60" r="57" stroke-width="1.2"/><circle cx="60" cy="60" r="51" stroke-width=".6"/><use href="#logo-o" x="26" y="26" width="68" height="68" stroke-width="2.4"/></svg>
+      <div class="swatches"><i style="background:#f2e8db"></i><i style="background:#6e1e34"></i><i style="background:#8f6a3a"></i><i style="background:#2b1d17"></i></div>
+    </section>
+    <section class="panel sage">
+      <h2>Шалфей</h2>
+      <div class="lockup" style="font-size:88px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+      <div class="lockup" style="font-size:40px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+      <svg class="emblem" viewBox="0 0 120 120" width="110" height="110"><circle cx="60" cy="60" r="57" stroke-width="1.2"/><circle cx="60" cy="60" r="51" stroke-width=".6"/><use href="#logo-o" x="26" y="26" width="68" height="68" stroke-width="2.4"/></svg>
+      <div class="swatches"><i style="background:#15211b"></i><i style="background:#2f4a3c"></i><i style="background:#dcc293"></i><i style="background:#f7c6ce"></i></div>
+    </section>
+  </div>
+
+  <div class="exports">
+    <div class="lockup on-dark" id="logo-light" style="font-size:120px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+    <div class="lockup on-light" id="logo-dark" style="font-size:120px"><span class="word">ПИ<svg class="o"><use href="#logo-o"/></svg>Н</span><span class="tag">цветочный магазин</span></div>
+    <svg class="emblem on-dark" id="emblem-gold" viewBox="0 0 120 120" width="240" height="240"><circle cx="60" cy="60" r="57" stroke-width="1.2"/><circle cx="60" cy="60" r="51" stroke-width=".6"/><use href="#logo-o" x="26" y="26" width="68" height="68" stroke-width="2.4"/></svg>
+    <svg class="emblem avatar" id="avatar" viewBox="0 0 120 120" width="240" height="240"><circle cx="60" cy="60" r="60" fill="#5a162d" stroke="none"/><circle cx="60" cy="60" r="52" stroke="#d9b77e" stroke-width=".8"/><use href="#logo-o" x="24" y="24" width="72" height="72" stroke="#e2c38c" stroke-width="2.6"/></svg>
+  </div>
+  <p class="note">Шрифт надписи&nbsp;— Cormorant Garamond, подписи&nbsp;— Manrope (оба бесплатные, с&nbsp;кириллицей).</p>
+</div>
+</body>
+</html>
