@@ -12,6 +12,7 @@
   const SHOP = {
     phone: '+79609685122',
     telegram: '', // ник в Telegram без @ — тогда текст заказа подставится в чат сам
+    telegramBot: 'pion_buket_bot', // ник бота магазина без @: заказ откроется в боте, бот перешлёт его администратору
     whatsapp: '79609685122', // номер, если на нём есть WhatsApp
     max: '', // ссылка на чат магазина в MAX
   };
@@ -502,10 +503,36 @@
     return order.id;
   }
 
-  function channelHref(kind, text) {
+  // Заказ для бота в ссылке t.me/<бот>?start=… (до 64 знаков): номер, товары из каталога по умолчанию,
+  // день, время, получение. Товар из админки бот не знает — тогда он попросит вставить скопированный текст.
+  function tgPayload() {
+    const n = orderNumber() || 0;
+    const defB = store ? store.DEFAULT_PRODUCTS : [];
+    const defF = store ? store.DEFAULT_FLOWERS : [];
+    const parts = [];
+    for (const [id, q] of cart) {
+      if (id === 'custom') {
+        parts.push('c0x1');
+        continue;
+      }
+      const b = defB.findIndex((x) => x.id === id);
+      const f = defF.findIndex((x) => x.id === id);
+      const p = products.get(id);
+      const def = b >= 0 ? defB[b] : f >= 0 ? defF[f] : null;
+      if (!def || def.name !== p.name) return `o${n}_t`;
+      parts.push(`${b >= 0 ? `b${b}` : `f${f}`}x${q}${p.price ? `p${p.price}` : ''}`);
+    }
+    const day = selDay ? selDay.slice(5).replace('-', '') : '0';
+    const payload = `o${n}_${parts.join('-') || 'n'}_${day}_${selSlot || '0'}_${way() === 'доставка' ? 'd' : 'p'}`;
+    return payload.length <= 64 ? payload : `o${n}_t`;
+  }
+
+  function channelHref(kind, text, quick) {
     const t = encodeURIComponent(text);
     switch (kind) {
-      case 'telegram': return SHOP.telegram ? `https://t.me/${SHOP.telegram}?text=${t}` : `https://t.me/${SHOP.phone}`;
+      case 'telegram':
+        if (SHOP.telegramBot) return `https://t.me/${SHOP.telegramBot}?start=${quick ? 'hi' : tgPayload()}`;
+        return SHOP.telegram ? `https://t.me/${SHOP.telegram}?text=${t}` : `https://t.me/${SHOP.phone}`;
       case 'whatsapp': return `https://wa.me/${SHOP.whatsapp}?text=${t}`;
       case 'max': return SHOP.max || `https://max.ru/:share?text=${t}`;
       case 'sms': return `sms:${SHOP.phone}?&body=${t}`;
@@ -513,6 +540,11 @@
     }
   }
   function channelHint(kind) {
+    if (kind === 'telegram' && SHOP.telegramBot) {
+      return tgPayload().endsWith('_t')
+        ? 'Откроется бот магазина: нажмите «Старт» и вставьте текст заказа — он уже скопирован.'
+        : 'Откроется бот магазина: нажмите «Старт» — заказ уже будет там.';
+    }
     if (kind === 'max' && !SHOP.max) return 'В MAX выберите чат магазина — текст уже подставлен и скопирован.';
     if (kind === 'telegram' && !SHOP.telegram) return 'Текст скопирован — вставьте его в чат с магазином.';
     if (kind === 'max') return 'Текст скопирован — вставьте его в чат с магазином.';
@@ -749,7 +781,7 @@
       const quick = 'quick' in d;
       const id = quick ? null : recordOrder(d.channel);
       const text = quick ? QUICK_TEXT : orderText();
-      el.href = channelHref(d.channel, text);
+      el.href = channelHref(d.channel, text, quick);
       copy(text);
       if (!quick) render();
       toast(id ? `Заказ № ${id} сохранён. ${channelHint(d.channel)}` : channelHint(d.channel));
@@ -757,7 +789,7 @@
   });
 
   $$('input[name="way"]', drawer).forEach((input) => input.addEventListener('change', render));
-  $$('[data-channel][data-quick]').forEach((a) => { a.href = channelHref(a.dataset.channel, QUICK_TEXT); });
+  $$('[data-channel][data-quick]').forEach((a) => { a.href = channelHref(a.dataset.channel, QUICK_TEXT, true); });
   if (!touch.matches) $$('[data-touch-only]').forEach((el) => { el.hidden = true; });
 
   // Админка открыта в другой вкладке этого браузера — обновляем каталоги, график и номера заказов.
