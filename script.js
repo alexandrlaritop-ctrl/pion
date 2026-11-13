@@ -13,7 +13,6 @@
     phone: '+79609685122',
     telegram: '', // ник в Telegram без @ — тогда текст заказа подставится в чат сам
     telegramBot: 'pion_buket_bot', // ник бота магазина без @: заказ откроется в боте, бот перешлёт его администратору
-    whatsapp: '79609685122', // номер, если на нём есть WhatsApp
     max: '', // ссылка на чат магазина в MAX
   };
   const store = window.PionStore || null;
@@ -36,6 +35,32 @@
   // короткие слова не остаются в конце строки
   const SHORT = /(^|[\s(«])(в|во|и|с|со|к|ко|о|об|у|на|по|из|за|от|до|не|ни|а|но|для|без|под|над)\s+/gi;
   const nbsp = (s) => String(s).replace(SHORT, (m, pre, w) => `${pre}${w} `);
+
+  /* ---------- сайт открыт внутри Telegram (кнопка «Каталог» в боте магазина) ---------- */
+  // Telegram передаёт свои параметры после «#». Его скрипт подключаем только в этом случае —
+  // обычным посетителям сайта он не нужен.
+  const inTelegram = /(^#|&)tgWebApp(Data|Version|Platform)=/.test(location.hash);
+  const tgApp = () => (inTelegram && window.Telegram && window.Telegram.WebApp) || null;
+  if (inTelegram) {
+    const s = document.createElement('script');
+    s.src = 'https://telegram.org/js/telegram-web-app.js';
+    s.onload = () => {
+      const app = tgApp();
+      if (!app) return;
+      try {
+        app.ready();
+        app.expand();
+        if (app.isVersionAtLeast('6.9')) {
+          app.setHeaderColor('#1a0710');
+          app.setBackgroundColor('#12040a');
+        }
+        if (app.isVersionAtLeast('7.7')) app.disableVerticalSwipes(); // чтобы прокрутка вверх не закрывала каталог
+      } catch {
+        // старая версия Telegram — оставляем как есть
+      }
+    };
+    document.head.append(s);
+  }
 
   /* ---------- расцветка (сайт в бордо; ?theme=beige|sage оставлены для сравнения) ---------- */
   const THEMES = { bordo: '#1a0710', beige: '#f2e8db', sage: '#15211b' };
@@ -533,7 +558,6 @@
       case 'telegram':
         if (SHOP.telegramBot) return `https://t.me/${SHOP.telegramBot}?start=${quick ? 'hi' : tgPayload()}`;
         return SHOP.telegram ? `https://t.me/${SHOP.telegram}?text=${t}` : `https://t.me/${SHOP.phone}`;
-      case 'whatsapp': return `https://wa.me/${SHOP.whatsapp}?text=${t}`;
       case 'max': return SHOP.max || `https://max.ru/:share?text=${t}`;
       case 'sms': return `sms:${SHOP.phone}?&body=${t}`;
       default: return '#';
@@ -787,6 +811,36 @@
       toast(id ? `Заказ № ${id} сохранён. ${channelHint(d.channel)}` : channelHint(d.channel));
     }
   });
+
+  // Внутри Telegram ссылки открывает сам Telegram: бот магазина — здесь же, остальное — в браузере.
+  // Заказ ушёл в бота — каталог закрываем, покупатель сразу видит чат с заказом.
+  if (inTelegram) {
+    document.addEventListener('click', (e) => {
+      const app = tgApp();
+      const a = e.target.closest('a[href]');
+      if (!app || !a || e.defaultPrevented) return;
+      const url = a.href;
+      if (/^https:\/\/t\.me\//.test(url)) {
+        e.preventDefault();
+        app.openTelegramLink(url);
+        if (a.dataset.channel) setTimeout(() => app.close(), 400);
+      } else if (/^https?:/.test(url) && a.target === '_blank') {
+        e.preventDefault();
+        app.openLink(url);
+      }
+    });
+    // здесь главная кнопка — Telegram; SMS из Telegram не отправить
+    for (const box of $$('.order__channels, .messengers')) {
+      const tgBtn = $('[data-channel="telegram"]', box);
+      if (!tgBtn) continue;
+      box.prepend(tgBtn);
+      for (const a of $$('[data-channel]', box)) {
+        const main = a.classList.contains('ch') ? 'ch--main' : 'msg-btn--main';
+        a.classList.toggle(main, a === tgBtn);
+        if (a.dataset.channel === 'sms') a.hidden = true;
+      }
+    }
+  }
 
   $$('input[name="way"]', drawer).forEach((input) => input.addEventListener('change', render));
   $$('[data-channel][data-quick]').forEach((a) => { a.href = channelHref(a.dataset.channel, QUICK_TEXT, true); });

@@ -753,7 +753,8 @@ a.topbar__item:hover { color: var(--foot-link); }
 .order__preview pre { margin: 8px 0 0; white-space: pre-wrap; word-break: break-word; font: 500 13.5px/1.55 var(--sans); color: var(--ink); }
 .order__foot { padding: 16px 24px 20px; border-top: 1px solid var(--line); background: var(--surface); }
 .order__send { font: 800 12px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--head); }
-.order__channels { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin-top: 10px; }
+.order__channels { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.order__channels .ch { flex: 1 1 96px; }
 .ch { display: inline-flex; align-items: center; justify-content: center; height: 48px; border-radius: 12px; background: var(--action); color: var(--on-action); font-weight: 800; text-decoration: none; transition: background-color .2s; }
 .ch:hover { background: var(--action-hover); }
 .ch--main { background: linear-gradient(180deg, var(--cta-1), var(--cta-2)); color: var(--on-cta); }

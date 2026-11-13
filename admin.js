@@ -286,7 +286,7 @@
     const samples = [
       { items: [item('orchids')], when: '', way: 'доставка', channel: 'telegram', status: 'declined', created: 50 * H, moved: 48 * H, note: 'Передумали' },
       { items: [item('box')], when: `${day(2)}, 12:00–14:00`, way: 'самовывоз', channel: 'max', status: 'accepted', created: 26 * H, moved: 20 * H, note: 'Заберут в 12:00' },
-      { items: [item('gift')], when: `${day(1)}, 10:00–12:00`, way: 'доставка', channel: 'whatsapp', status: 'waiting', created: 6 * H, moved: 5 * H, note: 'Ждём адрес доставки' },
+      { items: [item('gift')], when: `${day(1)}, 10:00–12:00`, way: 'доставка', channel: 'max', status: 'waiting', created: 6 * H, moved: 5 * H, note: 'Ждём адрес доставки' },
       { items: [item('mint', 2)], when: `${day(1)}, 14:00–16:00`, way: 'самовывоз', channel: 'telegram', status: 'wrote', created: 4 * H, moved: 3 * H, note: 'Спросили про открытку — ответить' },
       { items: [item('f-rose-pink', 15, 'flower'), item('f-chrysanthemum', 5, 'flower')], when: `${day(1)}, 16:00–18:00`, way: 'доставка', channel: 'max', status: 'new', created: 12 * 60000, moved: 12 * 60000, note: '' },
     ];
